@@ -1,33 +1,22 @@
-// Defining helper function to compute indexed NZ Super
-function computeIndexedNZSuper(age, approach, wageGrowthRate, inflationRate, sharedAmount) {
-    let indexedAmount;
-    
-    switch (approach) {
-        case 'none':
-            indexedAmount = sharedAmount;
-            break;
-        case 'cpi':
-            indexedAmount = sharedAmount * ((1 + inflationRate) ** (age - currentAge));
-            break;
-        case 'wage':
-            indexedAmount = sharedAmount * ((1 + wageGrowthRate) ** (age - currentAge));
-            break;
-        case 'hybrid':
-            indexedAmount = sharedAmount * Math.max((1 + inflationRate), (1 + wageGrowthRate)) ** (age - currentAge);
-            break;
-        default:
-            indexedAmount = sharedAmount;
-            break;
-    }
-    return indexedAmount;
-}
-
-// Modification to the calculate function
-function calculate() {
-    // ...existing calculation logic...
-    // Assuming currentAge and other parameters are defined
-    const nzSuperSummary = computeIndexedNZSuper(currentAge, indexationApproach, wageGrowthInput, inflationInput, sharedNZSuperAmount);
-    // Use nzSuperSummary in further calculations
-}
-
-// Note: Add additional logic for couple mode sharing as needed.
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Retirement Calculator</title>  
+</head>  
+<body>  
+    <h1>Retirement Calculator</h1>  
+    <div id="summary">  
+        <h2>Summary</h2>  
+        <p>NZ Superannuation at eligibility age: <span id="nz-super"></span></p>  
+    </div>  
+    <script>  
+        // Calculation for NZ Super indexation  
+        function calculateNZSuper(indexationApproach) {  
+            let nzSuper = ...; // Logic to calculate NZ Super based on the chosen indexation approach  
+            document.getElementById('nz-super').innerText = nzSuper;  
+        }  
+    </script>  
+</body>  
+</html>
