@@ -187,101 +187,132 @@
 
         // UPDATED: couple mode now uses shared wageGrowthShared and inflationRateShared inputs
         function calculate(){
-            const a=+g('age').value,
-                  wa=+g('withdrawalAge').value,
-                  b=+clean(g('currentBalance').value)||0,
-                  i=+clean(g('annualIncome').value)||0,
-                  mr=+g('memberRate').value||0,
-                  er=+g('employerRate').value||0,
-                  s=g('strategy').value,
-                  nza=+g('nzSuperAge').value||65,
-                  nzi=g('nzSuperIndexation').value,
-                  ir=g('incomeRule').value,
-                  rr=+g('retirementReturn').value||0,
-                  wg=+(coupleMode ? g('wageGrowthShared').value : g('wageGrowth').value) || 0,
-                  inf=+(coupleMode ? g('inflationRateShared').value : g('inflationRate').value) || 0,
-                  fhYear=+g('homeStartYear').value,
-                  fhAmount=g('homeStartAmount').value?+clean(g('homeStartAmount').value):0;
+    const a=+g('age').value,
+          wa=+g('withdrawalAge').value,
+          b=+clean(g('currentBalance').value)||0,
+          i=+clean(g('annualIncome').value)||0,
+          mr=+g('memberRate').value||0,
+          er=+g('employerRate').value||0,
+          s=g('strategy').value,
 
-            g('errorMessage').innerHTML='';
-            if(!a||!wa||!i||!s){g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
-            if(wa<60||wa<=a){g('errorMessage').innerHTML='<div class="error">⚠️ Invalid age range</div>';g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
+          // FIX: couple mode uses shared NZ Super + shared decumulation/invest inputs
+          nza=+(coupleMode ? g('nzSuperAgeShared').value : g('nzSuperAge').value) || 65,
+          nzi=(coupleMode ? g('nzSuperIndexationShared').value : g('nzSuperIndexation').value),
+          ir=(coupleMode ? g('incomeRuleShared').value : g('incomeRule').value),
+          rr=+(coupleMode ? g('retirementReturnShared').value : g('retirementReturn').value) || 0,
+          wg=+(coupleMode ? g('wageGrowthShared').value : g('wageGrowth').value) || 0,
+          inf=+(coupleMode ? g('inflationRateShared').value : g('inflationRate').value) || 0,
 
-            const iR=inf/100,rR=rr/100,wR=wg/100,
-                  ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg,reductionPeriods,suspensionPeriods,fhYear,fhAmount),
-                  nom=ks.nom,mTot=ks.mTot,eTot=ks.eTot,gTot=ks.gTot,fhWithdrawn=ks.fhWithdrawn,
-                  yrs=wa-a,
-                  real=nom/Math.pow(1+iR,yrs),
-                  rmTot=mTot/Math.pow(1+iR,yrs),
-                  reTot=eTot/Math.pow(1+iR,yrs),
-                  rgTot=gTot/Math.pow(1+iR,yrs),
-                  d=inflation?real:nom,
-                  ds=inflation?b:b*Math.pow(1+iR,yrs),
-                  dm=inflation?rmTot:mTot,
-                  de=inflation?reTot:eTot,
-                  dgg=inflation?rgTot:gTot,
-                  dFh=inflation?fhWithdrawn/Math.pow(1+iR,yrs):fhWithdrawn,
-                  r=d-ds-dm-de-dgg;
+          fhYear=+g('homeStartYear').value,
+          fhAmount=g('homeStartAmount').value?+clean(g('homeStartAmount').value):0;
 
-            g('breakdownStarting').textContent=fmt(ds);
-            g('breakdownMember').textContent=fmt(dm);
-            g('breakdownEmployer').textContent=fmt(de);
-            g('breakdownGovernment').textContent=fmt(dgg);
-            g('breakdownReturns').textContent=fmt(Math.max(0,r));
+    g('errorMessage').innerHTML='';
+    if(!a||!wa||!i||!s){g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
+    if(wa<60||wa<=a){g('errorMessage').innerHTML='<div class="error">⚠️ Invalid age range</div>';g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
 
-            const hsi=g('homeStartBreakdownItem');
-            if(homeStartEnabled&&dFh>0){hsi.style.display='flex';g('breakdownHomeStart').textContent=fmt(dFh);}else{hsi.style.display='none';}
+    const iR=inf/100,rR=rr/100,wR=wg/100,
+          ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg,reductionPeriods,suspensionPeriods,fhYear,fhAmount),
+          nom=ks.nom,mTot=ks.mTot,eTot=ks.eTot,gTot=ks.gTot,fhWithdrawn=ks.fhWithdrawn,
+          yrs=wa-a,
+          real=nom/Math.pow(1+iR,yrs),
+          rmTot=mTot/Math.pow(1+iR,yrs),
+          reTot=eTot/Math.pow(1+iR,yrs),
+          rgTot=gTot/Math.pow(1+iR,yrs),
+          d=inflation?real:nom,
+          ds=inflation?b:b*Math.pow(1+iR,yrs),
+          dm=inflation?rmTot:mTot,
+          de=inflation?reTot:eTot,
+          dgg=inflation?rgTot:gTot,
+          dFh=inflation?fhWithdrawn/Math.pow(1+iR,yrs):fhWithdrawn,
+          r=d-ds-dm-de-dgg;
 
-            const nzRate=coupleMode?nzSuperRates.couple:nzSuperRates.single;
-            g('nzSuperValue').textContent=fmt(nzRate);
-            g('nzSuperIndexationDetails').textContent=nzi==='none'?'Static':'Indexed';
+    g('breakdownStarting').textContent=fmt(ds);
+    g('breakdownMember').textContent=fmt(dm);
+    g('breakdownEmployer').textContent=fmt(de);
+    g('breakdownGovernment').textContent=fmt(dgg);
+    g('breakdownReturns').textContent=fmt(Math.max(0,r));
 
-            let html='';
-            for(let ar=65;ar<=90;ar++){
-                const yf=ar-wa,
-                      nom64=nom*Math.pow(1+rR,Math.max(0,yf)),
-                      real64=nom64/Math.pow(1+iR,Math.max(0,yf)),
-                      db=inflation?real64:nom64;
+    const hsi=g('homeStartBreakdownItem');
+    if(homeStartEnabled&&dFh>0){hsi.style.display='flex';g('breakdownHomeStart').textContent=fmt(dFh);}else{hsi.style.display='none';}
 
-                let ks_val=0;
-                if(ar>=wa){
-                    if(ir==='4percent')ks_val=db*.04;
-                    else if(ir==='6percent')ks_val=db*.06;
-                    else ks_val=db/(90-ar);
-                }
-                let nzs=ar>=nza?nzRate:0;
-                const t=ks_val+nzs,rep=i>0?(t/i)*100:0;
-                html+=`<tr><td>${ar}</td><td>${fmt(ks_val)}</td><td>${fmt(nzs)}</td><td>${fmt(t)}</td><td>${rep.toFixed(1)}%</td></tr>`;
-            }
-            g('incomeTable').innerHTML=html;
+    // FIX: NZ Super base comes from the UI (today's value)
+    const nzBaseNow = coupleMode
+      ? (+clean(g('nzSuperAnnualShared').value) || 0)
+      : (+clean(g('nzSuperAnnual').value) || 0);
 
-            if(coupleMode){
-                const ap=+g('agePartner').value,
-                      wap=+g('withdrawalAgePartner').value,
-                      bp=+clean(g('currentBalancePartner').value)||0,
-                      ip=+clean(g('annualIncomePartner').value)||0,
-                      mrp=+g('memberRatePartner').value||0,
-                      erp=+g('employerRatePartner').value||0,
-                      sp=g('strategyPartner').value,
-                      ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg,[],[],0,0),
-                      iR_partner=inf/100,
-                      realp=ksp.nom/Math.pow(1+iR_partner,wap-ap),
-                      dp=inflation?realp:ksp.nom,
-                      ba=+g('projectedBalance').textContent.replace(/[^0-9.-]/g,'');
+    // FIX: indexation method
+    function indexFactor(years){
+        const y=Math.max(0,years);
+        if(nzi==='none') return 1;
+        if(nzi==='cpi') return Math.pow(1+inf/100,y);
+        if(nzi==='wage') return Math.pow(1+wg/100,y);
+        if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
+        return 1;
+    }
 
-                g('projectedBalancePartner').textContent=fmt(dp);
-                g('withdrawalAgeDisplayPartner').textContent=wap;
-                g('combinedBalance').textContent=fmt(ba+dp);
-                g('coupleResults').classList.add('visible');
-            }else{
-                g('coupleResults').classList.remove('visible');
-            }
+    // FIX: index from now -> eligibility age for the summary box
+    const yearsToEligibility=Math.max(0,nza-a);
+    const nzAtEligibility=nzBaseNow*indexFactor(yearsToEligibility);
 
-            g('projectedBalance').textContent=fmt(d);
-            g('withdrawalAgeDisplay').textContent=`At age ${wa}`;
-            g('resultsContent').style.display='block';
-            g('resultsPlaceholder').style.display='none';
+    g('nzSuperValue').textContent=fmt(nzAtEligibility);
+    g('nzSuperIndexationDetails').textContent =
+        nzi==='none' ? 'Static' :
+        nzi==='cpi' ? 'Indexed (CPI)' :
+        nzi==='wage' ? 'Indexed (Wage)' :
+        'Indexed (Hybrid)';
+
+    let html='';
+    for(let ar=65;ar<=90;ar++){
+        const yf=ar-wa,
+              nom64=nom*Math.pow(1+rR,Math.max(0,yf)),
+              real64=nom64/Math.pow(1+iR,Math.max(0,yf)),
+              db=inflation?real64:nom64;
+
+        let ks_val=0;
+        if(ar>=wa){
+            if(ir==='4percent')ks_val=db*.04;
+            else if(ir==='6percent')ks_val=db*.06;
+            else ks_val=db/(90-ar);
         }
+
+        // FIX: NZ Super is 0 before eligibility, then indexed each year after eligibility
+        let nzs=0;
+        if(ar>=nza){
+            nzs = nzAtEligibility * indexFactor(ar-nza);
+        }
+
+        const t=ks_val+nzs,rep=i>0?(t/i)*100:0;
+        html+=`<tr><td>${ar}</td><td>${fmt(ks_val)}</td><td>${fmt(nzs)}</td><td>${fmt(t)}</td><td>${rep.toFixed(1)}%</td></tr>`;
+    }
+    g('incomeTable').innerHTML=html;
+
+    if(coupleMode){
+        const ap=+g('agePartner').value,
+              wap=+g('withdrawalAgePartner').value,
+              bp=+clean(g('currentBalancePartner').value)||0,
+              ip=+clean(g('annualIncomePartner').value)||0,
+              mrp=+g('memberRatePartner').value||0,
+              erp=+g('employerRatePartner').value||0,
+              sp=g('strategyPartner').value,
+              ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg,[],[],0,0),
+              iR_partner=inf/100,
+              realp=ksp.nom/Math.pow(1+iR_partner,wap-ap),
+              dp=inflation?realp:ksp.nom,
+              ba=+g('projectedBalance').textContent.replace(/[^0-9.-]/g,'');
+
+        g('projectedBalancePartner').textContent=fmt(dp);
+        g('withdrawalAgeDisplayPartner').textContent=wap;
+        g('combinedBalance').textContent=fmt(ba+dp);
+        g('coupleResults').classList.add('visible');
+    }else{
+        g('coupleResults').classList.remove('visible');
+    }
+
+    g('projectedBalance').textContent=fmt(d);
+    g('withdrawalAgeDisplay').textContent=`At age ${wa}`;
+    g('resultsContent').style.display='block';
+    g('resultsPlaceholder').style.display='none';
+}
     </script>
 </body>
 </html>
