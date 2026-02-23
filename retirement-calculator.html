@@ -116,6 +116,8 @@
         const formatCurrency=v=>v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
         const g=(id)=>document.getElementById(id);
         function calcIncomeTax(grossIncome){let tax=0,prevThreshold=0;for(let bracket of taxBrackets){if(grossIncome<=prevThreshold)break;const taxableInThisBracket=Math.min(grossIncome,bracket.threshold)-prevThreshold;tax+=taxableInThisBracket*bracket.rate/100;prevThreshold=bracket.threshold;}return tax;}
+        function getEsctRate(annualIncome){let rate=esctBrackets[0].rate;for(let bracket of esctBrackets){if(annualIncome>=bracket.threshold)rate=bracket.rate;}return rate;}
+        function getPieRate(annualIncome){let rate=pieBrackets[0].rate;for(let bracket of pieBrackets){if(annualIncome>=bracket.threshold)rate=bracket.rate;}return rate;}
         function renderTaxBrackets(){[g('taxBracketsContainer'),g('sharedTaxBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';taxBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="taxBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="taxBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
         function renderEsctBrackets(){[g('esctBracketsContainer'),g('sharedEsctBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';esctBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="esctBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="esctBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
         function renderPieBrackets(){[g('pieBracketsContainer'),g('sharedPieBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';pieBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="pieBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="pieBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
@@ -147,8 +149,8 @@
                 let mRate=mr,eRate=er;
                 if(reductionEnabled&&isReductionYear(y,p1)){mRate=3;eRate=3;}
                 if(suspensionEnabled&&isSuspensionYear(y,p2)){mRate=0;eRate=0;}
-                const netReturn=balance*mR;balance+=netReturn;totalReturns+=netReturn;
-                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,monthlyNetIncome=monthlyIncome-monthlyIncomeTax,memberCont=monthlyNetIncome*mRate/100,employerCont=monthlyIncome*eRate/100*0.885;
+                const esctRate=getEsctRate(yearIncome),pieRate=getPieRate(yearIncome),grossReturn=balance*mR,pieTax=grossReturn*(pieRate/100),netReturn=grossReturn-pieTax;balance+=netReturn;totalReturns+=netReturn;
+                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,monthlyNetIncome=monthlyIncome-monthlyIncomeTax,memberCont=monthlyNetIncome*mRate/100,employerCont=monthlyIncome*eRate/100*(1-esctRate/100);
                 balance+=memberCont+employerCont;totalMember+=memberCont;totalEmployer+=employerCont;yearlyMemberContrib+=memberCont;
                 if(monthInYear===11){
                     const govtContrib=yearIncome<=govtThreshold?Math.min(yearlyMemberContrib*govtRate/100,govtCap):0;
@@ -170,9 +172,9 @@
             const aR=strategyReturns[s]/100,mR=aR/12,months=(fhYear-1)*12,wR=wg/100;
             let balance=b,yearlyMemberContrib=0;
             for(let m=0;m<months;m++){
-                const y=Math.floor(m/12),monthInYear=m%12,yearIncome=i*Math.pow(1+wR,y),monthlyIncome=yearIncome/12,netReturn=balance*mR;
+                const y=Math.floor(m/12),monthInYear=m%12,yearIncome=i*Math.pow(1+wR,y),monthlyIncome=yearIncome/12,esctRate=getEsctRate(yearIncome),pieRate=getPieRate(yearIncome),grossReturn=balance*mR,pieTax=grossReturn*(pieRate/100),netReturn=grossReturn-pieTax;
                 balance+=netReturn;
-                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,monthlyNetIncome=monthlyIncome-monthlyIncomeTax,memberCont=monthlyNetIncome*mr/100,employerCont=monthlyIncome*er/100*0.885;
+                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,monthlyNetIncome=monthlyIncome-monthlyIncomeTax,memberCont=monthlyNetIncome*mr/100,employerCont=monthlyIncome*er/100*(1-esctRate/100);
                 balance+=memberCont+employerCont;
                 yearlyMemberContrib+=memberCont;
                 if(monthInYear===11){
