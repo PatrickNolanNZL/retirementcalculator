@@ -155,7 +155,7 @@ updateToggleButtons();updateEventUI();}
                 if(reductionEnabled&&isReductionYear(y,p1)){mRate=3;eRate=3;}
                 if(suspensionEnabled&&isSuspensionYear(y,p2)){mRate=0;eRate=0;}
                 const netReturn=balance*mR;balance+=netReturn;totalReturns+=netReturn;
-                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,monthlyNetIncome=monthlyIncome-monthlyIncomeTax,memberCont=monthlyNetIncome*mRate/100,employerCont=monthlyIncome*eRate/100*0.885;
+                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,memberCont=monthlyIncome*mRate/100,employerCont=monthlyIncome*eRate/100*0.885;
                 balance+=memberCont+employerCont;totalMember+=memberCont;totalEmployer+=employerCont;yearlyMemberContrib+=memberCont;
                 if(monthInYear===11){
                     const govtContrib=yearIncome<=govtThreshold?Math.min(yearlyMemberContrib*govtRate/100,govtCap):0;
@@ -180,7 +180,7 @@ updateToggleButtons();updateEventUI();}
             for(let m=0;m<months;m++){
                 const y=Math.floor(m/12),monthInYear=m%12,yearIncome=i*Math.pow(1+wR,y),monthlyIncome=yearIncome/12,netReturn=balance*mR;
                 balance+=netReturn;
-                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,monthlyNetIncome=monthlyIncome-monthlyIncomeTax,memberCont=monthlyNetIncome*mr/100,employerCont=monthlyIncome*er/100*0.885;
+                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,memberCont=monthlyIncome*mr/100,employerCont=monthlyIncome*er/100*0.885;
                 balance+=memberCont+employerCont;
                 yearlyMemberContrib+=memberCont;
                 if(monthInYear===11){
