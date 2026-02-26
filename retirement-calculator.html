@@ -115,19 +115,27 @@
         const clean=v=>(v+'').replace(/,/g,'');
         const formatCurrency=v=>v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
         const g=(id)=>document.getElementById(id);
+
+        // NEW: ESCT rate lookup (varies by income, based on editable thresholds/rates)
+        function getEsctRateForIncome(grossIncome){
+            const income = +grossIncome || 0;
+            // Ensure brackets are sorted
+            esctBrackets.sort((a,b)=>a.threshold-b.threshold);
+
+            let rate = esctBrackets.length ? esctBrackets[0].rate : 0;
+            for (const b of esctBrackets){
+                if (income >= b.threshold) rate = b.rate;
+                else break;
+            }
+            return rate;
+        }
+
         function calcIncomeTax(grossIncome){let tax=0,prevThreshold=0;for(let bracket of taxBrackets){if(grossIncome<=prevThreshold)break;const taxableInThisBracket=Math.min(grossIncome,bracket.threshold)-prevThreshold;tax+=taxableInThisBracket*bracket.rate/100;prevThreshold=bracket.threshold;}return tax;}
         function renderTaxBrackets(){[g('taxBracketsContainer'),g('sharedTaxBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';taxBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="taxBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="taxBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
-          function getEsctRateForIncome(grossIncome){
-    // Assumes brackets are "threshold is the minimum income for that rate"
-    // Choose the highest threshold <= income.
-    let rate = 0;
-    for (const b of esctBrackets){
-      if (grossIncome >= b.threshold) rate = b.rate;
-      else break;
-    }
-    return rate;
-  }
-        function renderEsctBrackets(){[g('esctBracketsContainer'),g('sharedEsctBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';esctBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="esctBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="esctBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
+
+        // UPDATED: ESCT brackets already editable in your version; now keep them sorted on change too
+        function renderEsctBrackets(){[g('esctBracketsContainer'),g('sharedEsctBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';esctBrackets.sort((a,b)=>a.threshold-b.threshold);esctBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="esctBrackets[${i}].threshold=+clean(this.value);esctBrackets.sort((a,b)=>a.threshold-b.threshold);this.value=formatCurrency(this.value);renderEsctBrackets();calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="esctBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
+
         function renderPieBrackets(){[g('pieBracketsContainer'),g('sharedPieBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';pieBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="pieBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="pieBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
         function renderStrategyReturns(){[g('strategyReturnsContainer'),g('sharedStrategyReturnsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';['defensive','conservative','balanced','growth','aggressive'].forEach((s)=>{const d=document.createElement('div');d.className='strategy-row';d.innerHTML=`<div class="form-group"><label>${s.charAt(0).toUpperCase()+s.slice(1)}</label></div><div class="form-group"><div class="input-with-unit"><input type="number" value="${strategyReturns[s]}" step="0.1" min="0" max="15" onchange="strategyReturns['${s}']=+this.value;calculate();"><div class="unit">%</div></div></div>`;c.appendChild(d);});});}
         function toggleCollapsible(section){const header=g(section+'Header'),content=g(section+'Content');if(!header||!content)return;content.classList.toggle('show');}
@@ -142,12 +150,12 @@
         function updateToggleButtons(){document.querySelectorAll('.inflation-toggle').forEach(b=>{b.classList.toggle('active',(b.dataset.value==='true')===inflation);});document.querySelectorAll('.fiscal-toggle').forEach(b=>{b.classList.toggle('active',(b.dataset.value==='true')===fiscalDrag);});}
         function toggleMode(){g('partnerCard').classList.toggle('visible',coupleMode);g('sharedSettingsCard').classList.toggle('visible',coupleMode);g('allInputs').classList.toggle('couple',coupleMode);g('layoutWrapper').classList.toggle('couple',coupleMode);document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));g(coupleMode?'coupleBtn':'individualBtn').classList.add('active');document.querySelectorAll('.individual-only').forEach(el=>{el.classList.toggle('hidden',coupleMode);});document.querySelectorAll('.shared-only').forEach(el=>{el.classList.toggle('visible',coupleMode);});
 
-// When switching into couple mode, reset the shared NZ Super annual rate to the couple default
-if (coupleMode && g('nzSuperAnnualShared')) {
-    g('nzSuperAnnualShared').value = nzSuperRates.couple.toLocaleString('en-NZ');
-}
+        // When switching into couple mode, reset the shared NZ Super annual rate to the couple default
+        if (coupleMode && g('nzSuperAnnualShared')) {
+            g('nzSuperAnnualShared').value = nzSuperRates.couple.toLocaleString('en-NZ');
+        }
 
-updateToggleButtons();updateEventUI();}
+        updateToggleButtons();updateEventUI();}
         function toggleBreakdown(el){el.classList.toggle('expanded');el.nextElementSibling.classList.toggle('show');}
         function isReductionYear(y,p){for(let period of p){if(y>=period.startYear-1&&y<period.startYear-1+period.duration)return true;}return false;}
         function isSuspensionYear(y,p){for(let period of p){if(y>=period.startYear-1&&y<period.startYear-1+period.duration)return true;}return false;}
@@ -165,9 +173,15 @@ updateToggleButtons();updateEventUI();}
                 if(reductionEnabled&&isReductionYear(y,p1)){mRate=3;eRate=3;}
                 if(suspensionEnabled&&isSuspensionYear(y,p2)){mRate=0;eRate=0;}
                 const netReturn=balance*mR;balance+=netReturn;totalReturns+=netReturn;
-                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,memberCont=monthlyIncome*mRate/100,const employerContGross = monthlyIncome * eRate / 100;
-  const esctRate = getEsctRateForIncome(yearIncome);
-  const employerCont = employerContGross * (1 - esctRate/100);
+
+                // UPDATED: employer contribution now uses ESCT brackets instead of hard-coded 0.885
+                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12; // kept for parity; not used
+                const memberCont=monthlyIncome*mRate/100;
+
+                const employerContGross = monthlyIncome*eRate/100;
+                const esctRate = getEsctRateForIncome(yearIncome);
+                const employerCont = employerContGross * (1 - esctRate/100);
+
                 balance+=memberCont+employerCont;totalMember+=memberCont;totalEmployer+=employerCont;yearlyMemberContrib+=memberCont;
                 if(monthInYear===11){
                     const govtContrib=yearIncome<=govtThreshold?Math.min(yearlyMemberContrib*govtRate/100,govtCap):0;
@@ -192,7 +206,15 @@ updateToggleButtons();updateEventUI();}
             for(let m=0;m<months;m++){
                 const y=Math.floor(m/12),monthInYear=m%12,yearIncome=i*Math.pow(1+wR,y),monthlyIncome=yearIncome/12,netReturn=balance*mR;
                 balance+=netReturn;
-                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,memberCont=monthlyIncome*mr/100,employerCont=monthlyIncome*er/100*0.885;
+
+                // UPDATED: employer contribution now uses ESCT brackets instead of hard-coded 0.885
+                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12; // kept for parity; not used
+                const memberCont=monthlyIncome*mr/100;
+
+                const employerContGross = monthlyIncome*er/100;
+                const esctRate = getEsctRateForIncome(yearIncome);
+                const employerCont = employerContGross * (1 - esctRate/100);
+
                 balance+=memberCont+employerCont;
                 yearlyMemberContrib+=memberCont;
                 if(monthInYear===11){
@@ -207,132 +229,132 @@ updateToggleButtons();updateEventUI();}
 
         // UPDATED: couple mode now uses shared wageGrowthShared and inflationRateShared inputs
         function calculate(){
-    const a=+g('age').value,
-          wa=+g('withdrawalAge').value,
-          b=+clean(g('currentBalance').value)||0,
-          i=+clean(g('annualIncome').value)||0,
-          mr=+g('memberRate').value||0,
-          er=+g('employerRate').value||0,
-          s=g('strategy').value,
+            const a=+g('age').value,
+                  wa=+g('withdrawalAge').value,
+                  b=+clean(g('currentBalance').value)||0,
+                  i=+clean(g('annualIncome').value)||0,
+                  mr=+g('memberRate').value||0,
+                  er=+g('employerRate').value||0,
+                  s=g('strategy').value,
 
-          // FIX: couple mode uses shared NZ Super + shared decumulation/invest inputs
-          nza=+(coupleMode ? g('nzSuperAgeShared').value : g('nzSuperAge').value) || 65,
-          nzi=(coupleMode ? g('nzSuperIndexationShared').value : g('nzSuperIndexation').value),
-          ir=(coupleMode ? g('incomeRuleShared').value : g('incomeRule').value),
-          rr=+(coupleMode ? g('retirementReturnShared').value : g('retirementReturn').value) || 0,
-          wg=+(coupleMode ? g('wageGrowthShared').value : g('wageGrowth').value) || 0,
-          inf=+(coupleMode ? g('inflationRateShared').value : g('inflationRate').value) || 0,
+                  // FIX: couple mode uses shared NZ Super + shared decumulation/invest inputs
+                  nza=+(coupleMode ? g('nzSuperAgeShared').value : g('nzSuperAge').value) || 65,
+                  nzi=(coupleMode ? g('nzSuperIndexationShared').value : g('nzSuperIndexation').value),
+                  ir=(coupleMode ? g('incomeRuleShared').value : g('incomeRule').value),
+                  rr=+(coupleMode ? g('retirementReturnShared').value : g('retirementReturn').value) || 0,
+                  wg=+(coupleMode ? g('wageGrowthShared').value : g('wageGrowth').value) || 0,
+                  inf=+(coupleMode ? g('inflationRateShared').value : g('inflationRate').value) || 0,
 
-          fhYear=+g('homeStartYear').value,
-          fhAmount=g('homeStartAmount').value?+clean(g('homeStartAmount').value):0;
+                  fhYear=+g('homeStartYear').value,
+                  fhAmount=g('homeStartAmount').value?+clean(g('homeStartAmount').value):0;
 
-    g('errorMessage').innerHTML='';
-    if(!a||!wa||!i||!s){g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
-    if(wa<60||wa<=a){g('errorMessage').innerHTML='<div class="error">⚠️ Invalid age range</div>';g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
+            g('errorMessage').innerHTML='';
+            if(!a||!wa||!i||!s){g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
+            if(wa<60||wa<=a){g('errorMessage').innerHTML='<div class="error">⚠️ Invalid age range</div>';g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
 
-    const iR=inf/100,rR=rr/100,wR=wg/100,
-          ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg,reductionPeriods,suspensionPeriods,fhYear,fhAmount),
-          nom=ks.nom,mTot=ks.mTot,eTot=ks.eTot,gTot=ks.gTot,fhWithdrawn=ks.fhWithdrawn,
-          yrs=wa-a,
-          real=nom/Math.pow(1+iR,yrs),
-          rmTot=mTot/Math.pow(1+iR,yrs),
-          reTot=eTot/Math.pow(1+iR,yrs),
-          rgTot=gTot/Math.pow(1+iR,yrs),
-          d=inflation?real:nom,
-          ds=inflation?b:b*Math.pow(1+iR,yrs),
-          dm=inflation?rmTot:mTot,
-          de=inflation?reTot:eTot,
-          dgg=inflation?rgTot:gTot,
-          dFh=inflation?fhWithdrawn/Math.pow(1+iR,yrs):fhWithdrawn,
-          r=d-ds-dm-de-dgg;
+            const iR=inf/100,rR=rr/100,wR=wg/100,
+                  ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg,reductionPeriods,suspensionPeriods,fhYear,fhAmount),
+                  nom=ks.nom,mTot=ks.mTot,eTot=ks.eTot,gTot=ks.gTot,fhWithdrawn=ks.fhWithdrawn,
+                  yrs=wa-a,
+                  real=nom/Math.pow(1+iR,yrs),
+                  rmTot=mTot/Math.pow(1+iR,yrs),
+                  reTot=eTot/Math.pow(1+iR,yrs),
+                  rgTot=gTot/Math.pow(1+iR,yrs),
+                  d=inflation?real:nom,
+                  ds=inflation?b:b*Math.pow(1+iR,yrs),
+                  dm=inflation?rmTot:mTot,
+                  de=inflation?reTot:eTot,
+                  dgg=inflation?rgTot:gTot,
+                  dFh=inflation?fhWithdrawn/Math.pow(1+iR,yrs):fhWithdrawn,
+                  r=d-ds-dm-de-dgg;
 
-    g('breakdownStarting').textContent=fmt(ds);
-    g('breakdownMember').textContent=fmt(dm);
-    g('breakdownEmployer').textContent=fmt(de);
-    g('breakdownGovernment').textContent=fmt(dgg);
-    g('breakdownReturns').textContent=fmt(Math.max(0,r));
+            g('breakdownStarting').textContent=fmt(ds);
+            g('breakdownMember').textContent=fmt(dm);
+            g('breakdownEmployer').textContent=fmt(de);
+            g('breakdownGovernment').textContent=fmt(dgg);
+            g('breakdownReturns').textContent=fmt(Math.max(0,r));
 
-    const hsi=g('homeStartBreakdownItem');
-    if(homeStartEnabled&&dFh>0){hsi.style.display='flex';g('breakdownHomeStart').textContent=fmt(dFh);}else{hsi.style.display='none';}
+            const hsi=g('homeStartBreakdownItem');
+            if(homeStartEnabled&&dFh>0){hsi.style.display='flex';g('breakdownHomeStart').textContent=fmt(dFh);}else{hsi.style.display='none';}
 
-    // FIX: NZ Super base comes from the UI (today's value)
-    const nzBaseNow = coupleMode
-      ? (+clean(g('nzSuperAnnualShared').value) || 0)
-      : (+clean(g('nzSuperAnnual').value) || 0);
+            // FIX: NZ Super base comes from the UI (today's value)
+            const nzBaseNow = coupleMode
+              ? (+clean(g('nzSuperAnnualShared').value) || 0)
+              : (+clean(g('nzSuperAnnual').value) || 0);
 
-    // FIX: indexation method
-    function indexFactor(years){
-        const y=Math.max(0,years);
-        if(nzi==='none') return 1;
-        if(nzi==='cpi') return Math.pow(1+inf/100,y);
-        if(nzi==='wage') return Math.pow(1+wg/100,y);
-        if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
-        return 1;
-    }
+            // FIX: indexation method
+            function indexFactor(years){
+                const y=Math.max(0,years);
+                if(nzi==='none') return 1;
+                if(nzi==='cpi') return Math.pow(1+inf/100,y);
+                if(nzi==='wage') return Math.pow(1+wg/100,y);
+                if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
+                return 1;
+            }
 
-    // FIX: index from now -> eligibility age for the summary box
-    const yearsToEligibility=Math.max(0,nza-a);
-    const nzAtEligibility=nzBaseNow*indexFactor(yearsToEligibility);
+            // FIX: index from now -> eligibility age for the summary box
+            const yearsToEligibility=Math.max(0,nza-a);
+            const nzAtEligibility=nzBaseNow*indexFactor(yearsToEligibility);
 
-    g('nzSuperValue').textContent=fmt(nzAtEligibility);
-    g('nzSuperIndexationDetails').textContent =
-        nzi==='none' ? 'Static' :
-        nzi==='cpi' ? 'Indexed (CPI)' :
-        nzi==='wage' ? 'Indexed (Wage)' :
-        'Indexed (Hybrid)';
+            g('nzSuperValue').textContent=fmt(nzAtEligibility);
+            g('nzSuperIndexationDetails').textContent =
+                nzi==='none' ? 'Static' :
+                nzi==='cpi' ? 'Indexed (CPI)' :
+                nzi==='wage' ? 'Indexed (Wage)' :
+                'Indexed (Hybrid)';
 
-    let html='';
-    for(let ar=65;ar<=90;ar++){
-        const yf=ar-wa,
-              nom64=nom*Math.pow(1+rR,Math.max(0,yf)),
-              real64=nom64/Math.pow(1+iR,Math.max(0,yf)),
-              db=inflation?real64:nom64;
+            let html='';
+            for(let ar=65;ar<=90;ar++){
+                const yf=ar-wa,
+                      nom64=nom*Math.pow(1+rR,Math.max(0,yf)),
+                      real64=nom64/Math.pow(1+iR,Math.max(0,yf)),
+                      db=inflation?real64:nom64;
 
-        let ks_val=0;
-        if(ar>=wa){
-            if(ir==='4percent')ks_val=db*.04;
-            else if(ir==='6percent')ks_val=db*.06;
-            else ks_val=db/(90-ar);
+                let ks_val=0;
+                if(ar>=wa){
+                    if(ir==='4percent')ks_val=db*.04;
+                    else if(ir==='6percent')ks_val=db*.06;
+                    else ks_val=db/(90-ar);
+                }
+
+                // FIX: NZ Super is 0 before eligibility, then indexed each year after eligibility
+                let nzs=0;
+                if(ar>=nza){
+                    nzs = nzAtEligibility * indexFactor(ar-nza);
+                }
+
+                const t=ks_val+nzs,rep=i>0?(t/i)*100:0;
+                html+=`<tr><td>${ar}</td><td>${fmt(ks_val)}</td><td>${fmt(nzs)}</td><td>${fmt(t)}</td><td>${rep.toFixed(1)}%</td></tr>`;
+            }
+            g('incomeTable').innerHTML=html;
+
+            if(coupleMode){
+                const ap=+g('agePartner').value,
+                      wap=+g('withdrawalAgePartner').value,
+                      bp=+clean(g('currentBalancePartner').value)||0,
+                      ip=+clean(g('annualIncomePartner').value)||0,
+                      mrp=+g('memberRatePartner').value||0,
+                      erp=+g('employerRatePartner').value||0,
+                      sp=g('strategyPartner').value,
+                      ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg,[],[],0,0),
+                      iR_partner=inf/100,
+                      realp=ksp.nom/Math.pow(1+iR_partner,wap-ap),
+                      dp=inflation?realp:ksp.nom,
+                      ba=+g('projectedBalance').textContent.replace(/[^0-9.-]/g,'');
+
+                g('projectedBalancePartner').textContent=fmt(dp);
+                g('withdrawalAgeDisplayPartner').textContent=wap;
+                g('combinedBalance').textContent=fmt(ba+dp);
+                g('coupleResults').classList.add('visible');
+            }else{
+                g('coupleResults').classList.remove('visible');
+            }
+
+            g('projectedBalance').textContent=fmt(d);
+            g('withdrawalAgeDisplay').textContent=`At age ${wa}`;
+            g('resultsContent').style.display='block';
+            g('resultsPlaceholder').style.display='none';
         }
-
-        // FIX: NZ Super is 0 before eligibility, then indexed each year after eligibility
-        let nzs=0;
-        if(ar>=nza){
-            nzs = nzAtEligibility * indexFactor(ar-nza);
-        }
-
-        const t=ks_val+nzs,rep=i>0?(t/i)*100:0;
-        html+=`<tr><td>${ar}</td><td>${fmt(ks_val)}</td><td>${fmt(nzs)}</td><td>${fmt(t)}</td><td>${rep.toFixed(1)}%</td></tr>`;
-    }
-    g('incomeTable').innerHTML=html;
-
-    if(coupleMode){
-        const ap=+g('agePartner').value,
-              wap=+g('withdrawalAgePartner').value,
-              bp=+clean(g('currentBalancePartner').value)||0,
-              ip=+clean(g('annualIncomePartner').value)||0,
-              mrp=+g('memberRatePartner').value||0,
-              erp=+g('employerRatePartner').value||0,
-              sp=g('strategyPartner').value,
-              ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg,[],[],0,0),
-              iR_partner=inf/100,
-              realp=ksp.nom/Math.pow(1+iR_partner,wap-ap),
-              dp=inflation?realp:ksp.nom,
-              ba=+g('projectedBalance').textContent.replace(/[^0-9.-]/g,'');
-
-        g('projectedBalancePartner').textContent=fmt(dp);
-        g('withdrawalAgeDisplayPartner').textContent=wap;
-        g('combinedBalance').textContent=fmt(ba+dp);
-        g('coupleResults').classList.add('visible');
-    }else{
-        g('coupleResults').classList.remove('visible');
-    }
-
-    g('projectedBalance').textContent=fmt(d);
-    g('withdrawalAgeDisplay').textContent=`At age ${wa}`;
-    g('resultsContent').style.display='block';
-    g('resultsPlaceholder').style.display='none';
-}
     </script>
 </body>
 </html>
