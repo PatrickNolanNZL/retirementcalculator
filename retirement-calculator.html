@@ -145,7 +145,7 @@ updateToggleButtons();updateEventUI();}
         // UPDATED: removed ad hoc -1 month from investment horizon
         function calcKiwiSaver(a,wa,b,i,mr,er,s,wg,p1,p2,fhYear,fhAmount){
             const aR=strategyReturns[s]/100,
-                  mR=aR/12,
+                  mR=Math.pow(1+aR,1/12)-1, // convert EAR to effective monthly rate
                   months=(wa-a)*12,
                   wR=wg/100;
             let balance=b,totalMember=0,totalEmployer=0,totalGovt=0,totalReturns=0,fhWithdrawn=0,yearlyMemberContrib=0;
@@ -174,7 +174,8 @@ updateToggleButtons();updateEventUI();}
         function updateMaxHomeWithdrawal(){
             const a=+g('age').value,b=+clean(g('currentBalance').value)||0,i=+clean(g('annualIncome').value)||0,mr=+g('memberRate').value||0,er=+g('employerRate').value||0,wg=+g('wageGrowth').value||0,s=g('strategy').value,fhYear=+g('homeStartYear').value;
             if(!a||!i){g('homeStartAmount').value='';return;}
-            const aR=strategyReturns[s]/100,mR=aR/12,months=(fhYear-1)*12,wR=wg/100;
+            const aR=strategyReturns[s]/100,mR=Math.pow(1+aR,1/12)-1, // convert EAR to effective monthly rate
+                  months=(fhYear-1)*12,wR=wg/100;
             let balance=b,yearlyMemberContrib=0;
             for(let m=0;m<months;m++){
                 const y=Math.floor(m/12),monthInYear=m%12,yearIncome=i*Math.pow(1+wR,y),monthlyIncome=yearIncome/12,netReturn=balance*mR;
