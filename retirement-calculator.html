@@ -117,6 +117,16 @@
         const g=(id)=>document.getElementById(id);
         function calcIncomeTax(grossIncome){let tax=0,prevThreshold=0;for(let bracket of taxBrackets){if(grossIncome<=prevThreshold)break;const taxableInThisBracket=Math.min(grossIncome,bracket.threshold)-prevThreshold;tax+=taxableInThisBracket*bracket.rate/100;prevThreshold=bracket.threshold;}return tax;}
         function renderTaxBrackets(){[g('taxBracketsContainer'),g('sharedTaxBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';taxBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="taxBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="taxBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
+          function getEsctRateForIncome(grossIncome){
+    // Assumes brackets are "threshold is the minimum income for that rate"
+    // Choose the highest threshold <= income.
+    let rate = 0;
+    for (const b of esctBrackets){
+      if (grossIncome >= b.threshold) rate = b.rate;
+      else break;
+    }
+    return rate;
+  }
         function renderEsctBrackets(){[g('esctBracketsContainer'),g('sharedEsctBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';esctBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="esctBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="esctBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
         function renderPieBrackets(){[g('pieBracketsContainer'),g('sharedPieBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';pieBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="pieBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="pieBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
         function renderStrategyReturns(){[g('strategyReturnsContainer'),g('sharedStrategyReturnsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';['defensive','conservative','balanced','growth','aggressive'].forEach((s)=>{const d=document.createElement('div');d.className='strategy-row';d.innerHTML=`<div class="form-group"><label>${s.charAt(0).toUpperCase()+s.slice(1)}</label></div><div class="form-group"><div class="input-with-unit"><input type="number" value="${strategyReturns[s]}" step="0.1" min="0" max="15" onchange="strategyReturns['${s}']=+this.value;calculate();"><div class="unit">%</div></div></div>`;c.appendChild(d);});});}
@@ -155,7 +165,9 @@ updateToggleButtons();updateEventUI();}
                 if(reductionEnabled&&isReductionYear(y,p1)){mRate=3;eRate=3;}
                 if(suspensionEnabled&&isSuspensionYear(y,p2)){mRate=0;eRate=0;}
                 const netReturn=balance*mR;balance+=netReturn;totalReturns+=netReturn;
-                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,memberCont=monthlyIncome*mRate/100,employerCont=monthlyIncome*eRate/100*0.885;
+                const monthlyIncomeTax=calcIncomeTax(yearIncome)/12,memberCont=monthlyIncome*mRate/100,const employerContGross = monthlyIncome * eRate / 100;
+  const esctRate = getEsctRateForIncome(yearIncome);
+  const employerCont = employerContGross * (1 - esctRate/100);
                 balance+=memberCont+employerCont;totalMember+=memberCont;totalEmployer+=employerCont;yearlyMemberContrib+=memberCont;
                 if(monthInYear===11){
                     const govtContrib=yearIncome<=govtThreshold?Math.min(yearlyMemberContrib*govtRate/100,govtCap):0;
