@@ -1,547 +1,1012 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Retirement Income Calculator</title>
- <style>
- *{margin:0;padding:0;box-sizing:border-box}
- body{background:linear-gradient(135deg,#E8F4F8 0%,#F0E8FF 100%);min-height:100vh;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
- .container{max-width:2000px;margin:0 auto}
- .header{text-align:center;margin-bottom:40px}
- h1{color:#1A237E;font-size:36px;font-weight:600;margin-bottom:12px}
- .subtitle{color:#1A237E;font-size:18px;margin-bottom:24px}
- .mode-toggle{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
- .layout-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px}
- .layout-wrapper.couple{grid-template-columns:1fr;gap:32px}
- .all-inputs{display:grid;grid-template-columns:1fr;gap:32px}
- .all-inputs.couple{grid-template-columns:1fr 1fr 1fr;gap:32px}
- .layout-wrapper:not(.couple) > .results-section{grid-column: 2 / 3;}
- .layout-wrapper.couple .results-section{grid-column:1/-1}
- .card{background:white;border-radius:12px;padding:32px;box-shadow:0 4px 12px rgba(0,0,0,.1);border:1px solid #F0F0F0}
- .card h2{color:#1A237E;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px;border-bottom:2px solid #F0F0F0;padding-bottom:12px}
- .card h3{color:#1A237E;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:20px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;background:#F5F6FA;padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
- .card h3:first-of-type{margin-top:0}
- .nested-h3{color:#1A237E;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:16px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;background:#F5F6FA;padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
- .form-group{margin-bottom:16px}
- label{display:block;margin-bottom:6px;color:#212121;font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
- input,select{width:100%;padding:10px 12px;border:2px solid #E8E8E8;border-radius:8px;font-size:14px;color:#212121;transition:all .2s}
- input:focus,select:focus{outline:none;border-color:#1A237E;box-shadow:0 0 0 3px rgba(26,35,126,.1)}
- .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
- .input-with-unit{display:flex}
- .input-with-unit input{border-radius:8px 0 0 8px}
- .unit{display:flex;align-items:center;padding:0 12px;background:#F5F6FA;border:2px solid #E8E8E8;border-left:none;border-radius:0 8px 8px 0;font-weight:600;color:#37474F;font-size:12px}
- .note{font-size:10px;color:#999;margin-top:4px}
- .label-note{font-size:11px;color:#999;text-transform:none;letter-spacing:normal;font-weight:400;margin-top:4px}
- .tax-bracket{background:#F5F6FA;padding:12px;border-radius:6px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:flex-end}
- .strategy-row{background:#F5F6FA;padding:12px;border-radius:6px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:flex-end}
- .toggle-group{display:flex;gap:8px;margin-top:6px}
- .toggle-btn{flex:1;padding:8px;border:2px solid #E8E8E8;background:white;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;cursor:pointer;transition:all .2s;color:#37474F}
- .toggle-btn.active{background:#1A237E;color:white;border-color:#1A237E}
- .toggle-btn:hover{border-color:#1A237E}
- .add-period-btn{background:#01796F;color:white;padding:10px 16px;font-size:12px;width:auto;margin-top:10px;border:none;border-radius:8px;cursor:pointer;transition:all .2s}
- .add-period-btn:hover{background:#016156}
- .remove-period-btn{background:#E74C3C;color:white;padding:8px 12px;font-size:11px;width:auto;margin-left:8px;border:none;border-radius:8px;cursor:pointer;transition:all .2s}
- .remove-period-btn:hover{background:#C0392B}
- .result-item{background:#F5F6FA;padding:16px;border-radius:8px;margin-bottom:12px;border-left:4px solid #01796F}
- .result-label{color:#757575;font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
- .result-value{color:#1A237E;font-size:28px;font-weight:700;margin-top:4px;font-family:monospace}
- .result-subtext{color:#999;font-size:11px;margin-top:4px}
- .breakdown{border:2px solid #E8E8E8;border-radius:8px;margin-top:12px;overflow:hidden}
- .breakdown-header{padding:12px;background:#F5F6FA;cursor:pointer;display:flex;justify-content:space-between;font-weight:600;color:#1A237E;user-select:none}
- .breakdown-header:hover{background:#EEEFF5}
- .breakdown-header.expanded{background:#1A237E;color:white}
- .breakdown-toggle{transition:transform .2s}
- .breakdown-header.expanded .breakdown-toggle{transform:rotate(180deg)}
- .breakdown-content{display:none;padding:12px;border-top:1px solid #E8E8E8}
- .breakdown-content.show{display:block}
- .breakdown-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #E8E8E8;font-size:12px}
- .breakdown-item:last-child{border-bottom:none}
- table{width:100%;margin-top:16px;border-collapse:collapse;font-size:11px}
- th{background:#F5F6FA;padding:8px;text-align:right;font-weight:600;color:#1A237E;border-bottom:2px solid #E8E8E8}
- th:first-child{text-align:left}
- td{padding:8px;border-bottom:1px solid #F0F0F0;text-align:right}
- td:first-child{text-align:left}
- .info{background:#E3F2FD;border-left:4px solid #01796F;padding:12px;border-radius:8px;margin-top:16px;color:#004085;font-size:12px}
- .error{background:#FFEBEE;border-left:4px solid #E74C3C;padding:12px;border-radius:8px;color:#C62828;margin-bottom:16px}
- .divider{border-top:1px solid #F0F0F0;margin:20px 0}
- .placeholder{text-align:center;padding:40px 20px;color:#999}
- .couple-results{display:none}
- .couple-results.visible{display:block}
- .partner-card{display:none}
- .partner-card.visible{display:block}
- .shared-settings{display:none}
- .shared-settings.visible{display:block}
- .your-settings{display:none}
- .your-settings.individual-mode{display:block}
- .your-settings.couple-mode{display:block}
- .individual-only{display:block}
- .individual-only.hidden{display:none}
- .shared-only{display:none}
- .shared-only.visible{display:block}
- .nested-form-group{background:#FAFAFA;padding:16px;border-radius:6px;margin-top:12px;border-left:3px solid #01796F}
- .period{background:#FFFFFF;border:1px solid #E8E8E8;border-radius:8px;padding:16px;margin-bottom:12px}
- .period-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
- .period-title{font-weight:600;color:#1A237E;font-size:13px}
- .period-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
- .collapsible-content{display:none}
- .collapsible-content.show{display:block}
-
-.layout-wrapper:not(.couple) #resultsCard { 
-  grid-column: 2 / 3 !important; 
-}
-
-/* Allow the main layout grid to use full viewport width */
-#layoutWrapper {
-  width: 100%;
-  max-width: none;
-}
-
-/* Allow full-width layouts inside the container */
-.container {
-  max-width: none;
-}
-
-/* Make container full width in individual mode */
-.container.wide {
-  max-width: 100vw;
-  width: 100vw;
-  margin-left: 0;
-  margin-right: 0;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.layout-wrapper > * {
-  min-width: 0;
-}
-.card {
-  width: 100%;
-  box-sizing: border-box;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retirement Income Calculator</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#E8F4F8 0%,#F0E8FF 100%);min-height:100vh;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    .container{max-width:2000px;margin:0 auto}
+    .header{text-align:center;margin-bottom:40px}
+    h1{color:#1A237E;font-size:36px;font-weight:600;margin-bottom:12px}
+    .subtitle{color:#1A237E;font-size:18px;margin-bottom:24px}
+    .mode-toggle{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px}
+    .mode-toggle .toggle-btn{font-size:18px;padding:16px 32px;border-radius:10px}
+    .layout-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px}
+    .layout-wrapper.couple{grid-template-columns:1fr;gap:32px}
+    .all-inputs{display:grid;grid-template-columns:1fr;gap:32px}
+    .all-inputs.couple{grid-template-columns:1fr 1fr 1fr;gap:32px}
+    .layout-wrapper:not(.couple) > .results-section{grid-column:2/3}
+    .layout-wrapper.couple .results-section{grid-column:1/-1}
+    .card{background:white;border-radius:12px;padding:32px;box-shadow:0 4px 12px rgba(0,0,0,.1);border:1px solid #F0F0F0}
+    .card h2{color:#1A237E;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px;border-bottom:2px solid #F0F0F0;padding-bottom:12px}
+    .card h3{color:#1A237E;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:20px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;background:#F5F6FA;padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
+    .card h3:first-of-type{margin-top:0}
+    .nested-h3{color:#1A237E;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:16px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;background:#F5F6FA;padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
+    .form-group{margin-bottom:16px}
+    label{display:block;margin-bottom:6px;color:#212121;font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
+    input,select{width:100%;padding:10px 12px;border:2px solid #E8E8E8;border-radius:8px;font-size:14px;color:#212121;transition:all .2s}
+    input:focus,select:focus{outline:none;border-color:#1A237E;box-shadow:0 0 0 3px rgba(26,35,126,.1)}
+    .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .input-with-unit{display:flex}
+    .input-with-unit input{border-radius:8px 0 0 8px}
+    .unit{display:flex;align-items:center;padding:0 12px;background:#F5F6FA;border:2px solid #E8E8E8;border-left:none;border-radius:0 8px 8px 0;font-weight:600;color:#37474F;font-size:12px}
+    .note{font-size:10px;color:#999;margin-top:4px}
+    .label-note{font-size:11px;color:#999;text-transform:none;letter-spacing:normal;font-weight:400;margin-top:4px}
+    .toggle-group{display:flex;gap:8px;margin-top:6px}
+    .toggle-btn{flex:1;padding:8px;border:2px solid #E8E8E8;background:white;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;cursor:pointer;transition:all .2s;color:#37474F}
+    .toggle-btn.active{background:#1A237E;color:white;border-color:#1A237E}
+    .toggle-btn:hover{border-color:#1A237E}
+    .result-item{background:#F5F6FA;padding:16px;border-radius:8px;margin-bottom:12px;border-left:4px solid #01796F}
+    .result-label{color:#757575;font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+    .result-value{color:#1A237E;font-size:28px;font-weight:700;margin-top:4px;font-family:monospace}
+    .result-subtext{color:#999;font-size:11px;margin-top:4px}
+    .breakdown{border:2px solid #E8E8E8;border-radius:8px;margin-top:12px;overflow:hidden}
+    .breakdown-header{padding:12px;background:#F5F6FA;cursor:pointer;display:flex;justify-content:space-between;font-weight:600;color:#1A237E;user-select:none}
+    .breakdown-header:hover{background:#EEEFF5}
+    .breakdown-header.expanded{background:#1A237E;color:white}
+    .breakdown-toggle{transition:transform .2s}
+    .breakdown-header.expanded .breakdown-toggle{transform:rotate(180deg)}
+    .breakdown-content{display:none;padding:12px;border-top:1px solid #E8E8E8}
+    .breakdown-content.show{display:block}
+    .breakdown-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #E8E8E8;font-size:12px}
+    .breakdown-item:last-child{border-bottom:none}
+    table{width:100%;margin-top:16px;border-collapse:collapse;font-size:11px}
+    th{background:#F5F6FA;padding:8px;text-align:right;font-weight:600;color:#1A237E;border-bottom:2px solid #E8E8E8}
+    th:first-child{text-align:left}
+    td{padding:8px;border-bottom:1px solid #F0F0F0;text-align:right}
+    td:first-child{text-align:left}
+    .info{background:#E3F2FD;border-left:4px solid #01796F;padding:12px;border-radius:8px;margin-top:16px;color:#004085;font-size:12px}
+    .error{background:#FFEBEE;border-left:4px solid #E74C3C;padding:12px;border-radius:8px;color:#C62828;margin-bottom:16px}
+    .divider{border-top:1px solid #F0F0F0;margin:20px 0}
+    .placeholder{text-align:center;padding:40px 20px;color:#999}
+    .couple-results{display:none}
+    .couple-results.visible{display:block}
+    .partner-card{display:none}
+    .partner-card.visible{display:block}
+    .shared-settings{display:none}
+    .shared-settings.visible{display:block}
+    .individual-only{display:block}
+    .individual-only.hidden{display:none}
+    .collapsible-content{display:none}
+    .collapsible-content.show{display:block}
+  </style>
 </head>
 <body>
- <div class="container">
- <div class="header">
- <h1>Retirement Income Calculator</h1>
- <p class="subtitle">Calculate your projected KiwiSaver balance and retirement income</p>
- <div class="mode-toggle">
- <button class="toggle-btn active" id="individualBtn">Individual</button>
- <button class="toggle-btn" id="coupleBtn">Couple</button>
- </div>
- </div>
- <div class="layout-wrapper" id="layoutWrapper">
- <div class="all-inputs" id="allInputs">
- <div class="card" id="yourCard">
- <h2>Your Details</h2>
- <div class="input-row">
- <div class="form-group"><label>Current Age</label><input type="number" id="age" value="35" min="18" max="100"></div>
- <div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawalAge" value="65" min="60" max="100"></div>
- </div>
- <div class="input-row">
- <div class="form-group"><label>KiwiSaver Balance</label><div class="input-with-unit"><input type="text" id="currentBalance" value="5,000" class="currency-input"><div class="unit">$</div></div></div>
- <div class="form-group"><label>Annual Gross Income</label><div class="input-with-unit"><input type="text" id="annualIncome" value="80,000" class="currency-input"><div class="unit">$</div></div></div>
- </div>
- <div class="input-row">
- <div class="form-group"><label>Member Contribution</label><div class="input-with-unit"><input type="number" id="memberRate" value="4" min="0" max="100" step="0.1"><div class="unit">%</div></div></div>
- <div class="form-group"><label>Employer Contribution</label><div class="input-with-unit"><input type="number" id="employerRate" value="4" min="0" max="100" step="0.1"><div class="unit">%</div></div></div>
- </div>
- <div class="form-group"><label>Investment Strategy</label><select id="strategy" onchange="calculate();"><option value="defensive">Defensive</option><option value="conservative">Conservative</option><option value="balanced" selected>Balanced</option><option value="growth">Growth</option><option value="aggressive">Aggressive</option></select></div>
+<!-- PATCH: couple income table visible + couple RR table enabled (minimal JS edits) -->
+<div class="container">
+  <div class="header">
+    <h1>Retirement Income Calculator</h1>
+    <p class="subtitle">Calculate your projected KiwiSaver balance and retirement income — BASELINE FIXED (govt+startdate)</p>
+    <div class="mode-toggle">
+      <button class="toggle-btn active" id="individualBtn">Individual</button>
+      <button class="toggle-btn" id="coupleBtn">Couple</button>
+    </div>
+  </div>
 
- <div class="your-settings individual-mode couple-mode" id="yourSettings">
- <h3 class="individual-only" id="taxHeader" onclick="toggleCollapsible('tax')">Personal Income Tax</h3>
- <div id="taxContent" class="collapsible-content individual-only"><p class="label-note">Thresholds and rates for income tax</p><div id="taxBracketsContainer"></div></div>
+  <div class="layout-wrapper" id="layoutWrapper">
+    <div class="all-inputs" id="allInputs">
 
- <h3 class="individual-only" id="esctHeader" onclick="toggleCollapsible('esct')">ESCT</h3>
- <div id="esctContent" class="collapsible-content individual-only"><p class="label-note">Employment Source Childcare Tax thresholds and rates (effective 1 April 2025)</p><div id="esctBracketsContainer"></div></div>
+      <!-- YOUR DETAILS -->
+      <div class="card" id="yourCard">
+        <h2>Your Details</h2>
 
- <h3 class="individual-only" id="pieHeader" onclick="toggleCollapsible('pie')">PIE</h3>
- <div id="pieContent" class="collapsible-content individual-only"><p class="label-note">Portfolio Investment Entity tax thresholds and rates (effective 1 April 2025)</p><div id="pieBracketsContainer"></div></div>
+        <h3 id="datesHeader" onclick="toggleCollapsible('dates')">Dates</h3>
+        <div id="datesContent" class="collapsible-content show">
+          <div class="input-row">
+            <div class="form-group">
+              <label>Date of birth</label>
+              <input type="date" id="dob" value="1991-01-03" />
+              <p class="label-note">Used to calculate current age and the model start date.</p>
+            </div>
 
- <h3 class="individual-only" id="govtHeader" onclick="toggleCollapsible('govt')">KiwiSaver Government Subsidy</h3>
- <div id="govtContent" class="collapsible-content individual-only"><p class="label-note">Government contribution matching rate and income threshold</p><div class="input-row"><div class="form-group"><label>Subsidy Rate</label><div class="input-with-unit"><input type="number" id="govtRate" value="25" min="0" max="100" step="0.1" onchange="govtRate=+this.value;calculate();"><div class="unit">%</div></div><p class="label-note">Per $ of member contribution</p></div><div class="form-group"><label>Income Threshold</label><div class="input-with-unit"><input type="text" id="govtThreshold" value="180,000" class="currency-input" onchange="govtThreshold=+clean(this.value);calculate();"><div class="unit">$</div></div><p class="label-note">Maximum income to receive subsidy</p></div></div><div class="input-row"><div class="form-group"><label>Annual Cap</label><div class="input-with-unit"><input type="text" id="govtCap" value="260.72" class="currency-input" onchange="govtCap=+clean(this.value);calculate();"><div class="unit">$</div></div><p class="label-note">Maximum subsidy per person per year</p></div></div></div>
+            <!-- UPDATED: dropdown instead of read-only text -->
+            <div class="form-group">
+              <label>Model start date</label>
+              <select id="modelStartChoice">
+ <option value="today" selected>Today</option>
+ <option value="birthdayThisYear">Birthday this calendar year</option>
+ </select>
+              <p class="label-note">Choose whether projections start today or on your birthday in the current calendar year.</p>
+            </div>
+          </div>
+        </div>
 
- <h3 id="earlyHeader" onclick="toggleCollapsible('early')">Early Withdrawals and Suspensions</h3>
- <div id="earlyContent" class="collapsible-content"><div class="form-group"><label>Temporary Rate Reduction</label><p class="label-note">Reduce contributions to 3% for specific periods</p><div class="toggle-group"><button type="button" class="toggle-btn active" id="reductionOff">No</button><button type="button" class="toggle-btn" id="reductionOn">Yes</button></div></div><div id="reductionDetails" class="nested-form-group" style="display:none;"><div id="reductionPeriodsContainer"></div><button class="add-period-btn" id="addPeriodBtn">+ Add Another Period</button></div><div class="form-group"><label>Savings Suspension</label><p class="label-note">Pause contributions for specific periods</p><div class="toggle-group"><button type="button" class="toggle-btn active" id="suspensionOff">No</button><button type="button" class="toggle-btn" id="suspensionOn">Yes</button></div></div><div id="suspensionDetails" class="nested-form-group" style="display:none;"><div id="suspensionPeriodsContainer"></div><button class="add-period-btn" id="addSuspensionBtn">+ Add Another Suspension</button></div><div class="form-group"><label>First Home Withdrawal</label><p class="label-note">Withdraw funds for first home purchase</p><div class="toggle-group"><button type="button" class="toggle-btn active" id="homeStartOff">No</button><button type="button" class="toggle-btn" id="homeStartOn">Yes</button></div></div><div id="homeStartDetails" class="nested-form-group" style="display:none;"><div class="input-row"><div class="form-group"><label for="homeStartYear">Year of Withdrawal</label><input type="number" id="homeStartYear" min="1" value="5" onchange="updateMaxHomeWithdrawal()"><p class="label-note">1 = next year, 2 = year after, etc.</p></div><div class="form-group"><label for="homeStartAmount">Amount to Withdraw</label><div class="input-with-unit"><input type="text" id="homeStartAmount" value="" class="currency-input" readonly><div class="unit">$</div></div><p class="label-note">Auto-filled with maximum available (balance minus $1,000)</p></div></div></div></div>
+        <div class="input-row">
+          <div class="form-group"><label>Current Age</label><input type="number" id="age" value="35" min="18" max="100" readonly></div>
+          <div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawalAge" value="65" min="60" max="100"></div>
+        </div>
 
- <h3 class="individual-only" id="investHeader" onclick="toggleCollapsible('invest')">Investment Assumptions</h3>
- <div id="investContent" class="collapsible-content individual-only"><div class="form-group"><label>Pre-Retirement Returns by Strategy</label><p class="label-note">Annual returns after taxes and fees (accumulation phase)</p><div id="strategyReturnsContainer"></div></div><div class="input-row"><div class="form-group"><label>Return After 65</label><div class="input-with-unit"><input type="number" id="retirementReturn" value="2.0" min="0" max="10" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div><div class="form-group"><label>Annual Wage Growth</label><div class="input-with-unit"><input type="number" id="wageGrowth" value="3.5" min="0" max="10" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div></div><div class="input-row"><div class="form-group"><label>Inflation Rate</label><div class="input-with-unit"><input type="number" id="inflationRate" value="2.0" min="0" max="10" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div><div class="form-group"><label>Display Results</label><div class="toggle-group"><button class="toggle-btn active inflation-toggle" data-value="true">Real</button><button class="toggle-btn inflation-toggle" data-value="false">Nominal</button></div></div></div><div class="form-group"><label>Fiscal Drag (ESCT)</label><div class="toggle-group"><button class="toggle-btn fiscal-toggle" data-value="true">Yes</button><button class="toggle-btn active fiscal-toggle" data-value="false">No</button></div></div></div>
+        <div class="input-row">
+          <div class="form-group"><label>KiwiSaver Balance</label><div class="input-with-unit"><input type="text" id="currentBalance" value="5,000" class="currency-input"><div class="unit">$</div></div></div>
+          <div class="form-group"><label>Annual Gross Income</label><div class="input-with-unit"><input type="text" id="annualIncome" value="80,000" class="currency-input"><div class="unit">$</div></div></div>
+        </div>
 
- <h3 class="nested-h3 individual-only" id="nzHeader" onclick="toggleCollapsible('nz')">NZ Super</h3>
- <div id="nzContent" class="collapsible-content individual-only"><div class="input-row"><div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAge" value="65" min="60" max="100" onchange="calculate();"></div><div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnual" value="26,689" class="currency-input" onchange="calculate();"><div class="unit">$</div></div><p class="note">2026 (single)</p></div></div><div class="form-group"><label>Indexation</label><select id="nzSuperIndexation" onchange="calculate();"><option value="none">None</option><option value="cpi" selected>CPI</option><option value="wage">Wage</option><option value="hybrid">Hybrid</option></select></div></div>
+        <div class="input-row">
+          <div class="form-group"><label>Member Contribution</label><div class="input-with-unit"><input type="number" id="memberRate" value="4" min="0" max="100" step="0.1"><div class="unit">%</div></div></div>
+          <div class="form-group"><label>Employer Contribution</label><div class="input-with-unit"><input type="number" id="employerRate" value="4" min="0" max="100" step="0.1"><div class="unit">%</div></div></div>
+        </div>
 
- <h3 class="nested-h3 individual-only" id="decumHeader" onclick="toggleCollapsible('decum')">Decumulation Strategy</h3>
- <div id="decumContent" class="collapsible-content individual-only"><div class="form-group"><label>Withdrawal Rule</label><select id="incomeRule" onchange="calculate();"><option value="4percent" selected>4% Rule</option><option value="6percent">6% Rule</option><option value="fixed-date">Fixed (Age 90)</option></select></div></div>
- </div>
- </div>
+        <div class="form-group">
+          <label>Investment Strategy</label>
+          <select id="strategy">
+            <option value="defensive">Defensive</option>
+            <option value="conservative">Conservative</option>
+            <option value="balanced" selected>Balanced</option>
+            <option value="growth">Growth</option>
+            <option value="aggressive">Aggressive</option>
+          </select>
+        </div>
 
- <div class="card partner-card" id="partnerCard">
- <h2>Partner Details</h2>
- <div class="input-row"><div class="form-group"><label>Current Age</label><input type="number" id="agePartner" value="35" min="18" max="100" onchange="calculate();"></div><div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawalAgePartner" value="65" min="60" max="100" onchange="calculate();"></div></div><div class="input-row"><div class="form-group"><label>KiwiSaver Balance</label><div class="input-with-unit"><input type="text" id="currentBalancePartner" value="5,000" class="currency-input"><div class="unit">$</div></div></div><div class="form-group"><label>Annual Gross Income</label><div class="input-with-unit"><input type="text" id="annualIncomePartner" value="80,000" class="currency-input"><div class="unit">$</div></div></div></div><div class="input-row"><div class="form-group"><label>Member Contribution</label><div class="input-with-unit"><input type="number" id="memberRatePartner" value="4" min="0" max="100" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div><div class="form-group"><label>Employer Contribution</label><div class="input-with-unit"><input type="number" id="employerRatePartner" value="4" min="0" max="100" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div></div><div class="form-group"><label>Investment Strategy</label><select id="strategyPartner" onchange="calculate();"><option value="defensive">Defensive</option><option value="conservative">Conservative</option><option value="balanced" selected>Balanced</option><option value="growth">Growth</option><option value="aggressive">Aggressive</option></select></div>
- </div>
+        <!-- Individual-only settings -->
+        <h3 class="individual-only" id="govtHeader" onclick="toggleCollapsible('govt')">KiwiSaver Government Subsidy</h3>
+        <div id="govtContent" class="collapsible-content individual-only">
+          <p class="label-note">Government contribution matching rate and income threshold</p>
+          <div class="input-row">
+            <div class="form-group">
+              <label>Subsidy Rate</label>
+              <div class="input-with-unit"><input type="number" id="govtRate" value="25" min="0" max="100" step="0.1"><div class="unit">%</div></div>
+              <p class="label-note">Per $ of member contribution</p>
+            </div>
+            <div class="form-group">
+              <label>Income Threshold</label>
+              <div class="input-with-unit"><input type="text" id="govtThreshold" value="180,000" class="currency-input"><div class="unit">$</div></div>
+              <p class="label-note">Maximum income to receive subsidy</p>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="form-group">
+              <label>Annual Cap</label>
+              <div class="input-with-unit"><input type="text" id="govtCap" value="260.72" class="currency-input"><div class="unit">$</div></div>
+              <p class="label-note">Maximum subsidy per person per year</p>
+            </div>
+          </div>
+        </div>
 
- <div class="card shared-settings" id="sharedSettingsCard">
- <h2>Shared Settings</h2>
- <div class="shared-only" id="sharedTaxSection"><h3 id="sharedTaxHeader" onclick="toggleCollapsible('sharedTax')">Personal Income Tax</h3><div id="sharedTaxContent" class="collapsible-content"><p class="label-note">Thresholds and rates for income tax</p><div id="sharedTaxBracketsContainer"></div></div></div>
- <div class="shared-only" id="sharedEsctSection"><h3 id="sharedEsctHeader" onclick="toggleCollapsible('sharedEsct')">ESCT</h3><div id="sharedEsctContent" class="collapsible-content"><p class="label-note">Employment Source Childcare Tax thresholds and rates (effective 1 April 2025)</p><div id="sharedEsctBracketsContainer"></div></div></div>
- <div class="shared-only" id="sharedPieSection"><h3 id="sharedPieHeader" onclick="toggleCollapsible('sharedPie')">PIE</h3><div id="sharedPieContent" class="collapsible-content"><p class="label-note">Portfolio Investment Entity tax thresholds and rates (effective 1 April 2025)</p><div id="sharedPieBracketsContainer"></div></div></div>
- <div class="shared-only" id="sharedGovtSection"><h3 id="sharedGovtHeader" onclick="toggleCollapsible('sharedGovt')">KiwiSaver Government Subsidy</h3><div id="sharedGovtContent" class="collapsible-content"><p class="label-note">Government contribution matching rate and income threshold</p><div class="input-row"><div class="form-group"><label>Subsidy Rate</label><div class="input-with-unit"><input type="number" id="sharedGovtRate" value="25" min="0" max="100" step="0.1" onchange="govtRate=+this.value;calculate();"><div class="unit">%</div></div><p class="label-note">Per $ of member contribution</p></div><div class="form-group"><label>Income Threshold</label><div class="input-with-unit"><input type="text" id="sharedGovtThreshold" value="180,000" class="currency-input" onchange="govtThreshold=+clean(this.value);calculate();"><div class="unit">$</div></div><p class="label-note">Maximum income to receive subsidy</p></div></div><div class="input-row"><div class="form-group"><label>Annual Cap</label><div class="input-with-unit"><input type="text" id="sharedGovtCap" value="260.72" class="currency-input" onchange="govtCap=+clean(this.value);calculate();"><div class="unit">$</div></div><p class="label-note">Maximum subsidy per person per year</p></div></div></div></div>
- <h3 id="sharedInvestHeader" onclick="toggleCollapsible('sharedInvest')">Investment Assumptions</h3>
- <div id="sharedInvestContent" class="collapsible-content"><div class="form-group"><label>Pre-Retirement Returns by Strategy</label><p class="label-note">Annual returns after taxes and fees (accumulation phase)</p><div id="sharedStrategyReturnsContainer"></div></div><div class="input-row"><div class="form-group"><label>Return After 65</label><div class="input-with-unit"><input type="number" id="retirementReturnShared" value="2.0" min="0" max="10" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div><div class="form-group"><label>Annual Wage Growth</label><div class="input-with-unit"><input type="number" id="wageGrowthShared" value="3.5" min="0" max="10" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div></div><div class="input-row"><div class="form-group"><label>Inflation Rate</label><div class="input-with-unit"><input type="number" id="inflationRateShared" value="2.0" min="0" max="10" step="0.1" onchange="calculate();"><div class="unit">%</div></div></div><div class="form-group"><label>Display Results</label><div class="toggle-group"><button class="toggle-btn active inflation-toggle" data-value="true">Real</button><button class="toggle-btn inflation-toggle" data-value="false">Nominal</button></div></div></div><div class="form-group"><label>Fiscal Drag (ESCT)</label><div class="toggle-group"><button class="toggle-btn fiscal-toggle" data-value="true">Yes</button><button class="toggle-btn active fiscal-toggle" data-value="false">No</button></div></div></div>
+        <h3 class="individual-only" id="investHeader" onclick="toggleCollapsible('invest')">Investment Assumptions</h3>
+        <div id="investContent" class="collapsible-content individual-only">
+          <div class="input-row">
+            <div class="form-group"><label>Return After 65</label><div class="input-with-unit"><input type="number" id="retirementReturn" value="2.0" step="0.1"><div class="unit">%</div></div></div>
+            <div class="form-group"><label>Annual Wage Growth</label><div class="input-with-unit"><input type="number" id="wageGrowth" value="3.5" step="0.1"><div class="unit">%</div></div></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Inflation Rate</label><div class="input-with-unit"><input type="number" id="inflationRate" value="2.0" step="0.1"><div class="unit">%</div></div></div>
+            <div class="form-group">
+              <label>Display Results</label>
+              <div class="toggle-group">
+                <button type="button" class="toggle-btn active inflation-toggle" data-value="true">Real</button>
+                <button type="button" class="toggle-btn inflation-toggle" data-value="false">Nominal</button>
+              </div>
+            </div>
+          </div>
 
- <h3 class="nested-h3" id="sharedNZHeader" onclick="toggleCollapsible('sharedNZ')">NZ Super</h3>
- <div id="sharedNZContent" class="collapsible-content"><div class="input-row"><div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAgeShared" value="65" min="60" max="100" onchange="calculate();"></div><div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnualShared" value="40,476" class="currency-input" onchange="calculate();"><div class="unit">$</div></div><p class="note">2026 (couple)</p></div></div><div class="form-group"><label>Indexation</label><select id="nzSuperIndexationShared" onchange="calculate();"><option value="none">None</option><option value="cpi" selected>CPI</option><option value="wage">Wage</option><option value="hybrid">Hybrid</option></select></div></div>
+          <div class="form-group">
+            <label>Fiscal Drag (ESCT)</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn fiscal-toggle" data-value="true">Yes</button>
+              <button type="button" class="toggle-btn active fiscal-toggle" data-value="false">No</button>
+            </div>
+          </div>
+        </div>
 
- <h3 class="nested-h3" id="sharedDecumHeader" onclick="toggleCollapsible('sharedDecum')">Decumulation Strategy</h3>
- <div id="sharedDecumContent" class="collapsible-content"><div class="form-group"><label>Withdrawal Rule</label><select id="incomeRuleShared" onchange="calculate();"><option value="4percent" selected>4% Rule</option><option value="6percent">6% Rule</option><option value="fixed-date">Fixed (Age 90)</option></select></div></div>
- </div>
+        <h3 class="nested-h3 individual-only" id="nzHeader" onclick="toggleCollapsible('nz')">NZ Super</h3>
+        <div id="nzContent" class="collapsible-content individual-only">
+          <div class="input-row">
+            <div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAge" value="65"></div>
+            <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnual" value="26,689" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (single)</p></div>
+          </div>
+          <div class="form-group">
+            <label>Indexation</label>
+            <select id="nzSuperIndexation">
+              <option value="none">None</option>
+              <option value="cpi" selected>CPI</option>
+              <option value="wage">Wage</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+        </div>
 
- <div class="card results-section" id="resultsCard">
- <h2>Results</h2>
- <div id="errorMessage"></div>
- <div id="resultsContent" style="display:none">
- <div class="result-item"><div class="result-label">Projected KiwiSaver Balance</div><div class="result-value" id="projectedBalance">$0.00</div><div class="result-subtext" id="withdrawalAgeDisplay"></div><div class="breakdown"><div class="breakdown-header" onclick="toggleBreakdown(this)"><span>Balance Breakdown</span><span class="breakdown-toggle">▼</span></div><div class="breakdown-content"><div class="breakdown-item"><span>Starting</span><span id="breakdownStarting">$0.00</span></div><div class="breakdown-item"><span>+ Contributions</span><span id="breakdownMember">$0.00</span></div><div class="breakdown-item"><span>+ Employer</span><span id="breakdownEmployer">$0.00</span></div><div class="breakdown-item"><span>+ Government</span><span id="breakdownGovernment">$0.00</span></div><div class="breakdown-item"><span>+ Returns</span><span id="breakdownReturns">$0.00</span></div><div class="breakdown-item" id="homeStartBreakdownItem" style="display:none;"><span>- First Home</span><span id="breakdownHomeStart">$0.00</span></div></div></div></div>
+        <h3 class="nested-h3 individual-only" id="decumHeader" onclick="toggleCollapsible('decum')">Decumulation Strategy</h3>
+        <div id="decumContent" class="collapsible-content individual-only">
+          <div class="form-group">
+            <label>Withdrawal Rule</label>
+            <select id="incomeRule">
+              <option value="4percent" selected>4% Rule</option>
+              <option value="6percent">6% Rule</option>
+              <option value="fixed-date">Fixed (Age 90)</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
- <div id="coupleResults" class="couple-results"><div class="divider"></div><div class="result-item"><div class="result-label">Partner Balance</div><div class="result-value" id="projectedBalancePartner">$0.00</div><div class="result-subtext">At age <span id="withdrawalAgeDisplayPartner">65</span></div></div><div class="result-item"><div class="result-label">Combined Balance</div><div class="result-value" id="combinedBalance">$0.00</div></div></div>
+      <!-- PARTNER DETAILS -->
+      <div class="card partner-card" id="partnerCard">
+        <h2>Partner Details</h2>
+        <div class="input-row">
+          <div class="form-group"><label>Current Age</label><input type="number" id="agePartner" value="35"></div>
+          <div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawalAgePartner" value="65"></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label>KiwiSaver Balance</label><div class="input-with-unit"><input type="text" id="currentBalancePartner" value="5,000" class="currency-input"><div class="unit">$</div></div></div>
+          <div class="form-group"><label>Annual Gross Income</label><div class="input-with-unit"><input type="text" id="annualIncomePartner" value="80,000" class="currency-input"><div class="unit">$</div></div></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label>Member Contribution</label><div class="input-with-unit"><input type="number" id="memberRatePartner" value="4" step="0.1"><div class="unit">%</div></div></div>
+          <div class="form-group"><label>Employer Contribution</label><div class="input-with-unit"><input type="number" id="employerRatePartner" value="4" step="0.1"><div class="unit">%</div></div></div>
+        </div>
+        <div class="form-group">
+          <label>Investment Strategy</label>
+          <select id="strategyPartner">
+            <option value="defensive">Defensive</option>
+            <option value="conservative">Conservative</option>
+            <option value="balanced" selected>Balanced</option>
+            <option value="growth">Growth</option>
+            <option value="aggressive">Aggressive</option>
+          </select>
+        </div>
+      </div>
 
- <div style="background:#E3F2FD;border-left:4px solid #01796F;padding:12px;border-radius:8px;margin-top:12px;color:#004085;font-size:12px"><div style="color:#757575;font-weight:600;text-transform:uppercase;margin-bottom:6px">Projected NZ Super (Annual)</div><div style="color:#1A237E;font-size:24px;font-weight:700;font-family:monospace" id="nzSuperValue">$0.00</div><div style="margin-top:6px" id="nzSuperIndexationDetails"></div></div>
+      <!-- SHARED SETTINGS -->
+      <div class="card shared-settings" id="sharedSettingsCard">
+        <h2>Shared Settings</h2>
 
- <div class="divider"></div>
- <h3 style="margin:0 0 12px;color:#1A237E;font-size:12px;font-weight:600;border:none;background:none;padding:0;text-transform:uppercase">Annual Retirement Income</h3>
- <table><thead><tr><th>Age</th><th>KiwiSaver</th><th>NZ Super</th><th>Total</th><th>Repl %</th></tr></thead><tbody id="incomeTable"></tbody></table>
- <div class="info"><strong>ℹ️ Estimates only</strong> – Actual returns vary by market performance.</div>
- </div>
- <div id="resultsPlaceholder" class="placeholder">Fill in your details and results will appear here</div>
- </div>
- </div>
- </div>
- </div>
+        <h3 id="sharedGovtHeader" onclick="toggleCollapsible('sharedGovt')">KiwiSaver Government Subsidy</h3>
+        <div id="sharedGovtContent" class="collapsible-content">
+          <div class="input-row">
+            <div class="form-group"><label>Subsidy Rate</label><div class="input-with-unit"><input type="number" id="sharedGovtRate" value="25" step="0.1"><div class="unit">%</div></div></div>
+            <div class="form-group"><label>Income Threshold</label><div class="input-with-unit"><input type="text" id="sharedGovtThreshold" value="180,000" class="currency-input"><div class="unit">$</div></div></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Annual Cap</label><div class="input-with-unit"><input type="text" id="sharedGovtCap" value="260.72" class="currency-input"><div class="unit">$</div></div></div>
+          </div>
+        </div>
 
- <script>
- let taxBrackets=[{threshold:15600,rate:10.5},{threshold:53500,rate:17.5},{threshold:78100,rate:30},{threshold:180000,rate:33},{threshold:Infinity,rate:39}];
- let esctBrackets=[{threshold:0,rate:10.5},{threshold:18720,rate:17.5},{threshold:64200,rate:30},{threshold:93720,rate:33},{threshold:216000,rate:39}];
- let pieBrackets=[{threshold:0,rate:10.5},{threshold:40000,rate:17.5},{threshold:70000,rate:28}];
- let govtRate=25,govtThreshold=180000,govtCap=260.72;
- let nzSuperRates={single:26689,couple:40476};
- let strategyReturns={defensive:1.5,conservative:2.5,balanced:3.5,growth:4.5,aggressive:5.5};
- let coupleMode=false,fiscalDrag=false,inflation=true;
- let reductionEnabled=false,suspensionEnabled=false,homeStartEnabled=false;
- let reductionPeriods=[{startYear:1,duration:1}],suspensionPeriods=[{startYear:1,duration:1}];
- const fmt=v=>'$'+v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
- const clean=v=>(v+'').replace(/,/g,'');
- const formatCurrency=v=>v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
- const g=(id)=>document.getElementById(id);
+        <h3 id="sharedInvestHeader" onclick="toggleCollapsible('sharedInvest')">Investment Assumptions</h3>
+        <div id="sharedInvestContent" class="collapsible-content">
+          <div class="input-row">
+            <div class="form-group"><label>Return After 65</label><div class="input-with-unit"><input type="number" id="retirementReturnShared" value="2.0" step="0.1"><div class="unit">%</div></div></div>
+            <div class="form-group"><label>Annual Wage Growth</label><div class="input-with-unit"><input type="number" id="wageGrowthShared" value="3.5" step="0.1"><div class="unit">%</div></div></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Inflation Rate</label><div class="input-with-unit"><input type="number" id="inflationRateShared" value="2.0" step="0.1"><div class="unit">%</div></div></div>
+            <div class="form-group">
+              <label>Display Results</label>
+              <div class="toggle-group">
+                <button type="button" class="toggle-btn active inflation-toggle" data-value="true">Real</button>
+                <button type="button" class="toggle-btn inflation-toggle" data-value="false">Nominal</button>
+              </div>
+            </div>
+          </div>
 
- // NEW: ESCT rate lookup (varies by income, based on editable thresholds/rates)
- function getEsctRateForIncome(grossIncome){
-   const income = +grossIncome || 0;
-   // Ensure brackets are sorted
-   esctBrackets.sort((a,b)=>a.threshold-b.threshold);
-   let rate = esctBrackets.length ? esctBrackets[0].rate : 0;
-   for (const b of esctBrackets){
-     if (income >= b.threshold) rate = b.rate;
-     else break;
-   }
-   return rate;
+          <div class="form-group">
+            <label>Fiscal Drag (ESCT)</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn fiscal-toggle" data-value="true">Yes</button>
+              <button type="button" class="toggle-btn active fiscal-toggle" data-value="false">No</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="nested-h3" id="sharedNZHeader" onclick="toggleCollapsible('sharedNZ')">NZ Super</h3>
+        <div id="sharedNZContent" class="collapsible-content">
+          <div class="input-row">
+            <div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAgeShared" value="65"></div>
+            <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnualShared" value="40,476" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (couple)</p></div>
+          </div>
+          <div class="form-group">
+            <label>Indexation</label>
+            <select id="nzSuperIndexationShared">
+              <option value="none">None</option>
+              <option value="cpi" selected>CPI</option>
+              <option value="wage">Wage</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 class="nested-h3" id="sharedDecumHeader" onclick="toggleCollapsible('sharedDecum')">Decumulation Strategy</h3>
+        <div id="sharedDecumContent" class="collapsible-content">
+          <div class="form-group">
+            <label>Withdrawal Rule</label>
+            <select id="incomeRuleShared">
+              <option value="4percent" selected>4% Rule</option>
+              <option value="6percent">6% Rule</option>
+              <option value="fixed-date">Fixed (Age 90)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card results-section" id="resultsCard">
+      <h2>Results</h2>
+      <div id="errorMessage"></div>
+
+      <div id="resultsContent" style="display:none">
+        <div class="result-item">
+          <div class="result-label" id="headlineBalanceLabel">Projected KiwiSaver Balance</div>
+          <div class="result-value" id="projectedBalance">$0.00</div>
+          <div class="result-subtext" id="withdrawalAgeDisplay"></div>
+
+          <div id="balanceBreakdownBlock">
+            <div class="breakdown">
+              <div class="breakdown-header" onclick="toggleBreakdown(this)">
+                <span>Balance Breakdown</span><span class="breakdown-toggle">▼</span>
+              </div>
+              <div class="breakdown-content">
+                <div class="breakdown-item"><span>Starting</span><span id="breakdownStarting">$0.00</span></div>
+                <div class="breakdown-item"><span>+ Contributions</span><span id="breakdownMember">$0.00</span></div>
+                <div class="breakdown-item"><span>+ Employer</span><span id="breakdownEmployer">$0.00</span></div>
+                <div class="breakdown-item"><span>+ Government</span><span id="breakdownGovernment">$0.00</span></div>
+                <div class="breakdown-item"><span>+ Returns</span><span id="breakdownReturns">$0.00</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="coupleResults" class="couple-results">
+            <div class="divider"></div>
+            <div class="breakdown" style="margin-top:12px;">
+              <div class="breakdown-header" onclick="toggleBreakdown(this)">
+                <span>Individual KiwiSaver balances</span><span class="breakdown-toggle">▼</span>
+              </div>
+              <div class="breakdown-content">
+                <div class="breakdown-item"><span>You</span><span id="yourBalanceValue">$0</span></div>
+                <div class="breakdown-item"><span>Partner</span><span id="partnerBalanceValue">$0</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#E3F2FD;border-left:4px solid #01796F;padding:12px;border-radius:8px;margin-top:12px;color:#004085;font-size:12px">
+          <div style="color:#757575;font-weight:600;text-transform:uppercase;margin-bottom:6px">NZ Super (NPV, 25y from eligibility)</div>
+          <div class="result-value" id="nzSuperValue">$0</div>
+          <div style="margin-top:6px" id="nzSuperIndexationDetails"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div id="incomeTableBlock">
+          <h3 style="margin:0 0 12px;color:#1A237E;font-size:12px;font-weight:600;border:none;background:none;padding:0;text-transform:uppercase">Annual Retirement Income</h3>
+          <table>
+            <thead><tr><th>Age</th><th>KiwiSaver</th><th>NZ Super</th><th>Total</th><th>Repl %</th></tr></thead>
+            <tbody id="incomeTable"></tbody>
+          </table>
+          <div class="info"><strong>ℹ️ Estimates only</strong> – Actual returns vary by market performance.</div>
+        </div>
+      </div>
+
+      <div id="resultsPlaceholder" class="placeholder">Fill in your details and results will appear here</div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.onerror = function(msg, url, line){
+  var em = document.getElementById("errorMessage");
+  if(em){ em.innerHTML = "<div class='error'>⚠️ JavaScript error: " + msg + " (line " + line + ")</div>"; }
+};
+
+let esctBrackets=[{threshold:0,rate:10.5},{threshold:18720,rate:17.5},{threshold:64200,rate:30},{threshold:93720,rate:33},{threshold:216000,rate:39}];
+let govtRate=25,govtThreshold=180000,govtCap=260.72;
+let strategyReturns={defensive:1.5,conservative:2.5,balanced:3.5,growth:4.5,aggressive:5.5};
+// Net return options (after tax & fees) by PIR (PIE investor rate)
+// Values are annual net returns expressed in percent (e.g., 3.5 = 3.5% p.a.)
+let returnsByPir = {
+  defensive: {10.5: 1.9, 17.5: 1.6, 28: 1.5},
+  conservative: {10.5: 3.0, 17.5: 2.7, 28: 2.5},
+  balanced: {10.5: 4.1, 17.5: 3.8, 28: 3.5},
+  growth: {10.5: 5.2, 17.5: 4.9, 28: 4.5},
+  aggressive: {10.5: 6.3, 17.5: 6.0, 28: 5.5}
+};
+function getPirRateFromIncome(annualIncome){
+  const inc = +annualIncome || 0;
+  // PIR bands aligned to personal income tax thresholds provided: 10.5% up to 15,600; 17.5% up to 53,500; otherwise 28% (PIE cap)
+  if(inc <= 15600) return 10.5;
+  if(inc <= 53500) return 17.5;
+  return 28;
+}
+
+let coupleMode=false,fiscalDrag=false,inflation=true;
+
+const fmt=v=>'$'+Number(v||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const clean=v=>(v+'').replace(/,/g,'');
+const formatCurrency=v=>v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const g=id=>document.getElementById(id);
+
+// --- DOB + model start date helpers ---
+let _fixedTodayStart = null; // holds the chosen 'today' start date once selected
+
+function parseDOB(){
+  const v = g('dob') ? g('dob').value : '';
+  if(!v) return null;
+  const d = new Date(v + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function nextBirthday(dob, refDate){
+  const r = new Date(refDate.getTime());
+  const y = r.getFullYear();
+  let nb = new Date(y, dob.getMonth(), dob.getDate());
+  if(nb < new Date(y, r.getMonth(), r.getDate())){
+    nb = new Date(y+1, dob.getMonth(), dob.getDate());
+  }
+  return nb;
+}
+
+function birthdayThisCalendarYear(dob, refDate){
+ const y = refDate.getFullYear();
+ return new Date(y, dob.getMonth(), dob.getDate());
+ }
+function ageFromDob(dob, refDate){
+  const ms = refDate - dob;
+  return ms / (365.25*24*60*60*1000);
+}
+
+
+// Age as of today (used for NZ Super eligibility anchoring)
+function getAgeToday(){
+  const dob = parseDOB();
+  if(!dob) return NaN;
+  return ageFromDob(dob, new Date());
+}
+function updateDatesUI(){
+  const dob = parseDOB();
+  if(!dob) return;
+  const now = new Date();
+
+  // Always show age as of today
+  if(g('age')) g('age').value = ageFromDob(dob, now).toFixed(3);
+
+  // Determine model start date based on dropdown selection
+  const choiceEl = g('modelStartChoice');
+  const choice = choiceEl ? choiceEl.value : 'today';
+
+  let startDate;
+  if(choice === 'today'){
+    if(!_fixedTodayStart){
+      _fixedTodayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+    startDate = new Date(_fixedTodayStart.getTime());
+  } else if(choice === 'birthdayThisYear'){
+ _fixedTodayStart = null;
+ startDate = birthdayThisCalendarYear(dob, now);
+ // Guard: if birthday already passed this calendar year, start today (avoid back-dating)
+ const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+ if(startDate < today0){ startDate = today0; }
+ } else {
+ _fixedTodayStart = null;
+ startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
  }
 
- function calcIncomeTax(grossIncome){let tax=0,prevThreshold=0;for(let bracket of taxBrackets){if(grossIncome<=prevThreshold)break;const taxableInThisBracket=Math.min(grossIncome,bracket.threshold)-prevThreshold;tax+=taxableInThisBracket*bracket.rate/100;prevThreshold=bracket.threshold;}return tax;}
+  // Store for calculation use
+  window.__modelStartDate = startDate;
+}
 
- function renderTaxBrackets(){[g('taxBracketsContainer'),g('sharedTaxBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';taxBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="taxBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="taxBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
+function getModelStartDate(){
+  const d = window.__modelStartDate;
+  if(d && !isNaN(d.getTime())) return d;
 
- function renderEsctBrackets(){[g('esctBracketsContainer'),g('sharedEsctBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';esctBrackets.sort((a,b)=>a.threshold-b.threshold);esctBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="esctBrackets[${i}].threshold=+clean(this.value);esctBrackets.sort((a,b)=>a.threshold-b.threshold);this.value=formatCurrency(this.value);renderEsctBrackets();calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="esctBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
+  const dob = parseDOB();
+  const now = new Date();
+  if(!dob) return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
- function renderPieBrackets(){[g('pieBracketsContainer'),g('sharedPieBracketsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';pieBrackets.forEach((b,i)=>{if(b.threshold===Infinity)return;const d=document.createElement('div');d.className='tax-bracket';d.innerHTML=`<div class="form-group"><label>Threshold $</label><input type="text" value="${b.threshold.toLocaleString()}" class="currency-input" onchange="pieBrackets[${i}].threshold=+clean(this.value);this.value=formatCurrency(this.value);calculate();"></div><div class="form-group"><label>Rate %</label><input type="number" value="${b.rate}" step="0.1" min="0" max="50" onchange="pieBrackets[${i}].rate=+this.value;calculate();"></div>`;c.appendChild(d);});});}
-
- function renderStrategyReturns(){[g('strategyReturnsContainer'),g('sharedStrategyReturnsContainer')].forEach(c=>{if(!c)return;c.innerHTML='';['defensive','conservative','balanced','growth','aggressive'].forEach((s)=>{const d=document.createElement('div');d.className='strategy-row';d.innerHTML=`<div class="form-group"><label>${s.charAt(0).toUpperCase()+s.slice(1)}</label></div><div class="form-group"><div class="input-with-unit"><input type="number" value="${strategyReturns[s]}" step="0.1" min="0" max="15" onchange="strategyReturns['${s}']=+this.value;calculate();"><div class="unit">%</div></div></div>`;c.appendChild(d);});});}
-
- function toggleCollapsible(section){const header=g(section+'Header'),content=g(section+'Content');if(!header||!content)return;content.classList.toggle('show');}
-
- document.addEventListener('DOMContentLoaded',()=>{
-   renderTaxBrackets();renderEsctBrackets();renderPieBrackets();renderStrategyReturns();
-   document.querySelectorAll('.currency-input').forEach(input=>{
-     input.addEventListener('input',function(){this.value=formatCurrency(this.value);});
-     input.addEventListener('blur',()=>{updateMaxHomeWithdrawal();calculate();});
-   });
-   g('individualBtn').addEventListener('click',()=>{coupleMode=false;toggleMode();calculate();});
-   g('coupleBtn').addEventListener('click',()=>{coupleMode=true;toggleMode();calculate();});
-   document.querySelectorAll('.inflation-toggle').forEach(btn=>{btn.addEventListener('click',()=>{inflation=btn.dataset.value==='true';updateToggleButtons();calculate();});});
-   document.querySelectorAll('.fiscal-toggle').forEach(btn=>{btn.addEventListener('click',()=>{fiscalDrag=btn.dataset.value==='true';updateToggleButtons();calculate();});});
-   g('reductionOn').addEventListener('click',()=>{reductionEnabled=true;updateEventUI();g('reductionDetails').style.display='block';calculate();});
-   g('reductionOff').addEventListener('click',()=>{reductionEnabled=false;updateEventUI();g('reductionDetails').style.display='none';calculate();});
-   g('suspensionOn').addEventListener('click',()=>{suspensionEnabled=true;updateEventUI();g('suspensionDetails').style.display='block';calculate();});
-   g('suspensionOff').addEventListener('click',()=>{suspensionEnabled=false;updateEventUI();g('suspensionDetails').style.display='none';calculate();});
-   g('homeStartOn').addEventListener('click',()=>{homeStartEnabled=true;updateEventUI();g('homeStartDetails').style.display='block';updateMaxHomeWithdrawal();});
-   g('homeStartOff').addEventListener('click',()=>{homeStartEnabled=false;updateEventUI();g('homeStartDetails').style.display='none';calculate();});
-   g('addPeriodBtn').addEventListener('click',()=>{reductionPeriods.push({startYear:1,duration:1});renderReductionPeriods();calculate();});
-   g('addSuspensionBtn').addEventListener('click',()=>{suspensionPeriods.push({startYear:1,duration:1});renderSuspensionPeriods();calculate();});
-   ['age','withdrawalAge','memberRate','employerRate','retirementReturn','wageGrowth','inflationRate','nzSuperAge','nzSuperIndexation','incomeRule','agePartner','withdrawalAgePartner','memberRatePartner','employerRatePartner','retirementReturnShared','wageGrowthShared','inflationRateShared','nzSuperAgeShared','nzSuperIndexationShared','incomeRuleShared'].forEach(id=>{if(g(id))g(id).addEventListener('change',()=>{updateMaxHomeWithdrawal();calculate();});});
-   renderReductionPeriods();renderSuspensionPeriods();toggleMode();updateMaxHomeWithdrawal();calculate();
- });
-
- function renderReductionPeriods(){const container=g('reductionPeriodsContainer');container.innerHTML='';reductionPeriods.forEach((p,i)=>{const d=document.createElement('div');d.className='period';d.innerHTML=`<div class="period-header"><div class="period-title">Period ${i+1}</div>${reductionPeriods.length>1?`<button type="button" class="remove-period-btn" onclick="removePeriod(${i})">Remove</button>`:''}</div><div class="period-inputs"><div class="form-group"><label>Start Year</label><input type="number" min="1" value="${p.startYear}" onchange="updatePeriod(${i},'startYear',this.value);calculate();"><p class="label-note">1 = next year, 2 = year after, etc.</p></div><div class="form-group"><label>Duration (Years)</label><input type="number" min="1" value="${p.duration}" onchange="updatePeriod(${i},'duration',this.value);calculate();"></div></div>`;container.appendChild(d);});}
-
- function renderSuspensionPeriods(){const container=g('suspensionPeriodsContainer');container.innerHTML='';suspensionPeriods.forEach((p,i)=>{const d=document.createElement('div');d.className='period';d.innerHTML=`<div class="period-header"><div class="period-title">Suspension ${i+1}</div>${suspensionPeriods.length>1?`<button type="button" class="remove-period-btn" onclick="removeSuspension(${i})">Remove</button>`:''}</div><div class="period-inputs"><div class="form-group"><label>Start Year</label><input type="number" min="1" value="${p.startYear}" onchange="updateSuspension(${i},'startYear',this.value);calculate();"><p class="label-note">1 = next year, 2 = year after, etc.</p></div><div class="form-group"><label>Duration (Years)</label><input type="number" min="1" value="${p.duration}" onchange="updateSuspension(${i},'duration',this.value);calculate();"></div></div>`;container.appendChild(d);});}
-
- function updatePeriod(i,f,v){if(reductionPeriods[i])reductionPeriods[i][f]=parseInt(v);}
- function updateSuspension(i,f,v){if(suspensionPeriods[i])suspensionPeriods[i][f]=parseInt(v);}
- function removePeriod(i){reductionPeriods.splice(i,1);renderReductionPeriods();calculate();}
- function removeSuspension(i){suspensionPeriods.splice(i,1);renderSuspensionPeriods();calculate();}
-
- function updateEventUI(){
-   document.querySelectorAll('#reductionOn, #reductionOff').forEach(b=>{const isActive=reductionEnabled;b.classList.toggle('active',(b.id==='reductionOn')===isActive);});
-   document.querySelectorAll('#suspensionOn, #suspensionOff').forEach(b=>{const isActive=suspensionEnabled;b.classList.toggle('active',(b.id==='suspensionOn')===isActive);});
-   document.querySelectorAll('#homeStartOn, #homeStartOff').forEach(b=>{const isActive=homeStartEnabled;b.classList.toggle('active',(b.id==='homeStartOn')===isActive);});
+  const choiceEl = g('modelStartChoice');
+  const choice = choiceEl ? choiceEl.value : 'today';
+  if(choice === 'today') return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+ if(choice === 'birthdayThisYear'){
+  const bd = birthdayThisCalendarYear(dob, now);
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return (bd < today0) ? today0 : bd;
  }
+ return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
 
- function updateToggleButtons(){
-   document.querySelectorAll('.inflation-toggle').forEach(b=>{b.classList.toggle('active',(b.dataset.value==='true')===inflation);});
-   document.querySelectorAll('.fiscal-toggle').forEach(b=>{b.classList.toggle('active',(b.dataset.value==='true')===fiscalDrag);});
- }
+function getStartAge(){
+  const dob = parseDOB();
+  const start = getModelStartDate();
+  if(!dob || !start) return +g('age').value || 0;
+  return ageFromDob(dob, start);
+}
+
+
+// --- OPTION A: date-based horizon (surgical change) ---
+// Retirement date = birthday when the user turns withdrawalAge
+function getRetirementDate(withdrawalAge){
+  const dob = parseDOB();
+  if(!dob || !isFinite(withdrawalAge)) return null;
+  const y = dob.getFullYear() + Math.round(withdrawalAge);
+  const d = new Date(y, dob.getMonth(), dob.getDate());
+  return isNaN(d.getTime()) ? null : d;
+}
+// Date-based horizon (year fraction) from model start date to retirement date
+function getYearsTotalDateHorizon(withdrawalAge){
+  const start = getModelStartDate();
+  const ret = getRetirementDate(withdrawalAge);
+  const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+  if(!start || !ret || isNaN(start.getTime()) || isNaN(ret.getTime())) return NaN;
+  return (ret - start) / MS_PER_YEAR;
+}
+function getEsctRateForIncome(grossIncome){
+  const income = +grossIncome || 0;
+  esctBrackets.sort((a,b)=>a.threshold-b.threshold);
+  let rate = esctBrackets.length ? esctBrackets[0].rate : 0;
+  for (const b of esctBrackets){
+    if (income >= b.threshold) rate = b.rate; else break;
+  }
+  return rate;
+}
+
+function toggleCollapsible(section){
+  const header=g(section+'Header'), content=g(section+'Content');
+  if(!header || !content) return;
+  content.classList.toggle('show');
+}
+
+function toggleBreakdown(el){
+  el.classList.toggle('expanded');
+  el.nextElementSibling.classList.toggle('show');
+}
 
 function toggleMode(){
   g('partnerCard').classList.toggle('visible',coupleMode);
   g('sharedSettingsCard').classList.toggle('visible',coupleMode);
   g('allInputs').classList.toggle('couple',coupleMode);
   g('layoutWrapper').classList.toggle('couple',coupleMode);
-  document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
-  g(coupleMode?'coupleBtn':'individualBtn').classList.add('active');
-  document.querySelectorAll('.individual-only').forEach(el=>{el.classList.toggle('hidden',coupleMode);});
-  document.querySelectorAll('.shared-only').forEach(el=>{el.classList.toggle('visible',coupleMode);});
+  g('individualBtn').classList.toggle('active',!coupleMode);
+  g('coupleBtn').classList.toggle('active',coupleMode);
+  document.querySelectorAll('.individual-only').forEach(el=>el.classList.toggle('hidden',coupleMode));
+  g('coupleResults').classList.toggle('visible',coupleMode);
 
-  const container = document.querySelector('.container');
-  const body = document.body;
-  if (coupleMode) {
-    container.classList.remove('wide');
-    body.style.paddingLeft = "20px";
-    body.style.paddingRight = "20px";
-  } else {
-    container.classList.add('wide');
-    body.style.paddingLeft = "0";
-    body.style.paddingRight = "0";
-  }
-
-  if (coupleMode && g('nzSuperAnnualShared')) {
-    g('nzSuperAnnualShared').value = nzSuperRates.couple.toLocaleString('en-NZ');
-  }
-  updateToggleButtons();updateEventUI();
+  const bb=g('balanceBreakdownBlock');
+  const it=g('incomeTableBlock');
+  if(bb) bb.style.display = coupleMode ? 'none' : '';
+  if(it) it.style.display = '';
 }
 
- function toggleBreakdown(el){el.classList.toggle('expanded');el.nextElementSibling.classList.toggle('show');}
+function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLedger){
+ // OPTION A: allow date-based horizon override (year fraction)
+ const yearsTotal = (isFinite(yearsTotalOverride) && yearsTotalOverride > 0) ? yearsTotalOverride : (wa - a);
+ if(!(yearsTotal > 0)){
+   return {nom: b, mTot: 0, eTot: 0, gTot: 0, rTot: 0};
+ }
+ // Determine PIR from starting annual income (Excel-style: PIR fixed to starting income)
+ const pir = getPirRateFromIncome(i);
+ const annualR = ((returnsByPir[s] && (returnsByPir[s][pir] ?? returnsByPir[s][28])) || (strategyReturns[s] || 0)) / 100;
+ const wageG = (wg || 0) / 100;
+ useMtcLedger = !!useMtcLedger;
 
- function isReductionYear(y,p){for(let period of p){if(y>=period.startYear-1&&y<period.startYear-1+period.duration)return true;}return false;}
- function isSuspensionYear(y,p){for(let period of p){if(y>=period.startYear-1&&y<period.startYear-1+period.duration)return true;}return false;}
+ if(useMtcLedger){
+  // Excel-timing monthly engine (timing/order sensitive)
+  // This keeps the date-based horizon for total duration, but executes in discrete monthly periods.
+  const periodsPerYear = 12;
+  const totalPeriods = Math.max(0, Math.round(yearsTotal * periodsPerYear));
+  if(totalPeriods === 0){
+    return {nom: b, mTot: 0, eTot: 0, gTot: 0, rTot: 0};
+  }
 
- // UPDATED: removed ad hoc -1 month from investment horizon
- function calcKiwiSaver(a,wa,b,i,mr,er,s,wg,p1,p2,fhYear,fhAmount){
-   const aR=strategyReturns[s]/100,
-         mR=Math.pow(1+aR,1/12)-1, // convert EAR to effective monthly rate
-         months=(wa-a)*12,
-         wR=wg/100;
+  let balance = b;
+  let totalMember = 0, totalEmployer = 0, totalGovt = 0, totalReturns = 0;
 
-   // NEW: base ESCT rate (fixed at starting income) to support Fiscal Drag toggle
-   const baseEsctRate = getEsctRateForIncome(i);
+  // Salary growth at exact model-year boundary: period 13, 25, 37...
+  function getSalaryForPeriod(baseSalary, growthRate, periodNumber){
+    const modelYear = Math.ceil(periodNumber / periodsPerYear);
+    return baseSalary * Math.pow(1 + growthRate, modelYear - 1);
+  }
 
-   let balance=b,totalMember=0,totalEmployer=0,totalGovt=0,totalReturns=0,fhWithdrawn=0,yearlyMemberContrib=0;
+  // Tax-year numbering per Excel convention described:
+  // period 1 = tax year 0 (partial first year), periods 2-13 = year 1, 14-25 = year 2, etc.
+  function getTaxYearNumber(periodNumber){
+    if(periodNumber === 1) return 0;
+    return Math.ceil((periodNumber - 1) / periodsPerYear);
+  }
+  function isLastPeriodOfTaxYear(periodNumber){
+    if(periodNumber === 1) return true;
+    return getTaxYearNumber(periodNumber) !== getTaxYearNumber(periodNumber + 1);
+  }
 
-   for(let m=0;m<months;m++){
-     const y=Math.floor(m/12),
-           monthInYear=m%12,
-           yearIncome=i*Math.pow(1+wR,y),
-           monthlyIncome=yearIncome/12;
+  // Ledger for member contributions within current tax year
+  let currentTaxYear = getTaxYearNumber(1);
+  let memberSumThisYear = 0;
+  let incomeExceededThisYear = false;
 
-     let mRate=mr,eRate=er;
-     if(reductionEnabled && isReductionYear(y,p1)){mRate=3;eRate=3;}
-     if(suspensionEnabled && isSuspensionYear(y,p2)){mRate=0;eRate=0;}
+  const monthlyMultiplier = Math.pow(1 + annualR, 1/periodsPerYear);
 
-     const netReturn=balance*mR; balance+=netReturn; totalReturns+=netReturn;
+  for(let p=1; p<=totalPeriods; p++){
+    // 1. Opening balance
+    const openingBalance = balance;
 
-     const monthlyIncomeTax=calcIncomeTax(yearIncome)/12; // kept for parity; not used
-     const memberCont=monthlyIncome*mRate/100;
-     const employerContGross = monthlyIncome*eRate/100;
+    // 2. Salary for this period (growth at period 13, 25, ...)
+    const annualSalary = getSalaryForPeriod(i, wageG, p);
 
-     // NEW: fiscalDrag controls whether ESCT is fixed (starting income) or varies with yearIncome
-     const esctRate = fiscalDrag ? getEsctRateForIncome(yearIncome) : baseEsctRate;
-     const employerCont = employerContGross * (1 - esctRate/100);
+    // 3. Interest on opening balance BEFORE contributions
+    const balanceAfterInterest = openingBalance * monthlyMultiplier;
+    const interestEarned = balanceAfterInterest - openingBalance;
 
-     balance+=memberCont+employerCont;
-     totalMember+=memberCont; totalEmployer+=employerCont; yearlyMemberContrib+=memberCont;
+    // 4. Contributions based on this period salary
+    const memberCont = (annualSalary * (mr/100)) / periodsPerYear;
+    const employerGrossCont = (annualSalary * (er/100)) / periodsPerYear;
+    const esctRate = fiscalDrag ? getEsctRateForIncome(annualSalary) : getEsctRateForIncome(i);
+    const employerCont = employerGrossCont * (1 - esctRate/100);
 
-     if(monthInYear===11){
-       const govtContrib=yearIncome<=govtThreshold?Math.min(yearlyMemberContrib*govtRate/100,govtCap):0;
-       balance+=govtContrib; totalGovt+=govtContrib; yearlyMemberContrib=0;
-     }
+    // 5. Track eligibility / tax-year ledger
+    const ageAtStart = a + ((p-1)/periodsPerYear);
+    const eligibleAge = (ageAtStart >= 18) && (ageAtStart < 65);
 
-     if(homeStartEnabled && m+1===fhYear*12){
-       const maxWithdraw=Math.max(0,balance-1000);
-       fhWithdrawn=Math.min(fhAmount||maxWithdraw,maxWithdraw);
-       balance-=fhWithdrawn;
-     }
-   }
-   return{nom:balance,mTot:totalMember,eTot:totalEmployer,gTot:totalGovt,fhWithdrawn:fhWithdrawn};
+    const ty = getTaxYearNumber(p);
+    if(ty !== currentTaxYear){
+      // tax year rolled (shouldn't happen except after a payment), reset ledger
+      currentTaxYear = ty;
+      memberSumThisYear = 0;
+      incomeExceededThisYear = false;
+    }
+
+    if(eligibleAge){
+      memberSumThisYear += memberCont;
+      if(annualSalary > govtThreshold){
+        incomeExceededThisYear = true;
+      }
+    }
+
+    // 6. Govt contribution paid only at last period of tax year
+    let govtCont = 0;
+ const payNow = isLastPeriodOfTaxYear(p) || (p === totalPeriods);
+ if(payNow && eligibleAge && !incomeExceededThisYear){
+  const matched = memberSumThisYear * (govtRate/100);
+  govtCont = Math.min(govtCap, matched);
+ }
+    // 7. Closing balance = balance after interest + contributions
+    const closingBalance = balanceAfterInterest + memberCont + employerCont + govtCont;
+
+    // Totals
+    totalReturns += interestEarned;
+    totalMember += memberCont;
+    totalEmployer += employerCont;
+    totalGovt += govtCont;
+
+    // If we just paid the govt credit, clear the ledger so next period starts fresh
+    if(payNow){
+ currentTaxYear = getTaxYearNumber(p+1);
+ memberSumThisYear = 0;
+ incomeExceededThisYear = false;
+ }
+    balance = closingBalance;
+  }
+
+  return {nom: balance, mTot: totalMember, eTot: totalEmployer, gTot: totalGovt, rTot: totalReturns};
+}
+
+ 
+ // ---- Fallback: monthly engine (also Excel-timing order) ----
+ // Used when we don't have full date ledger context (e.g., partner mode).
+ const periodsPerYear_F = 12;
+ const totalPeriods_F = Math.max(0, Math.round(yearsTotal * periodsPerYear_F));
+ if(totalPeriods_F === 0){
+  return {nom: b, mTot: 0, eTot: 0, gTot: 0, rTot: 0};
+ }
+ const monthlyMultiplier_F = Math.pow(1 + annualR, 1/periodsPerYear_F);
+
+ function getSalaryForPeriod_F(baseSalary, growthRate, periodNumber){
+  const modelYear = Math.ceil(periodNumber / periodsPerYear_F);
+  return baseSalary * Math.pow(1 + growthRate, modelYear - 1);
+ }
+ function getTaxYearNumber_F(periodNumber){
+  if(periodNumber === 1) return 0;
+  return Math.ceil((periodNumber - 1) / periodsPerYear_F);
+ }
+ function isLastPeriodOfTaxYear_F(periodNumber){
+  if(periodNumber === 1) return true;
+  return getTaxYearNumber_F(periodNumber) !== getTaxYearNumber_F(periodNumber + 1);
  }
 
- // UPDATED: removed ad hoc -1 month from first-home max withdrawal preview horizon
- function updateMaxHomeWithdrawal(){
-   const a=+g('age').value,
-         b=+clean(g('currentBalance').value)||0,
-         i=+clean(g('annualIncome').value)||0,
-         mr=+g('memberRate').value||0,
-         er=+g('employerRate').value||0,
-         wg=+g('wageGrowth').value||0,
-         s=g('strategy').value,
-         fhYear=+g('homeStartYear').value;
-   if(!a||!i){g('homeStartAmount').value='';return;}
+ let balance = b;
+ let totalMember = 0, totalEmployer = 0, totalGovt = 0, totalReturns = 0;
 
-   const aR=strategyReturns[s]/100,
-         mR=Math.pow(1+aR,1/12)-1, // convert EAR to effective monthly rate
-         months=(fhYear-1)*12,
-         wR=wg/100;
+ let currentTaxYear = getTaxYearNumber_F(1);
+ let memberSumThisYear = 0;
+ let incomeExceededThisYear = false;
 
-   // NEW: base ESCT rate for fixed-ESCT mode in the preview loop too
-   const baseEsctRate = getEsctRateForIncome(i);
+ for(let p=1; p<=totalPeriods_F; p++){
+  const openingBalance = balance;
+  const annualSalary = getSalaryForPeriod_F(i, wageG, p);
 
-   let balance=b,yearlyMemberContrib=0;
-   for(let m=0;m<months;m++){
-     const y=Math.floor(m/12),
-           monthInYear=m%12,
-           yearIncome=i*Math.pow(1+wR,y),
-           monthlyIncome=yearIncome/12,
-           netReturn=balance*mR;
-     balance+=netReturn;
+  // Interest on opening before contributions
+  const balanceAfterInterest = openingBalance * monthlyMultiplier_F;
+  const interestEarned = balanceAfterInterest - openingBalance;
 
-     const monthlyIncomeTax=calcIncomeTax(yearIncome)/12; // kept for parity; not used
-     const memberCont=monthlyIncome*mr/100;
-     const employerContGross = monthlyIncome*er/100;
+  // Contributions
+  const memberCont = (annualSalary * (mr/100)) / periodsPerYear_F;
+  const employerGrossCont = (annualSalary * (er/100)) / periodsPerYear_F;
+  const esctRate = fiscalDrag ? getEsctRateForIncome(annualSalary) : getEsctRateForIncome(i);
+  const employerCont = employerGrossCont * (1 - esctRate/100);
 
-     // NEW: fiscalDrag controls whether ESCT is fixed or varies, consistent with main calc
-     const esctRate = fiscalDrag ? getEsctRateForIncome(yearIncome) : baseEsctRate;
-     const employerCont = employerContGross * (1 - esctRate/100);
+  // Govt ledger / eligibility
+  const ageAtStart = a + ((p-1)/periodsPerYear_F);
+  const eligibleAge = (ageAtStart >= 18) && (ageAtStart < 65);
 
-     balance+=memberCont+employerCont;
-     yearlyMemberContrib+=memberCont;
+  const ty = getTaxYearNumber_F(p);
+  if(ty !== currentTaxYear){
+   currentTaxYear = ty;
+   memberSumThisYear = 0;
+   incomeExceededThisYear = false;
+  }
 
-     if(monthInYear===11){
-       const govtContrib=yearIncome<=govtThreshold?Math.min(yearlyMemberContrib*govtRate/100,govtCap):0;
-       balance+=govtContrib;
-       yearlyMemberContrib=0;
-     }
+  if(eligibleAge){
+   memberSumThisYear += memberCont;
+   if(annualSalary > govtThreshold){
+    incomeExceededThisYear = true;
    }
-   const maxWithdraw=Math.max(0,balance-1000);
-   g('homeStartAmount').value=maxWithdraw>0?fmt(maxWithdraw):'$0.00';
+  }
+
+  let govtCont = 0;
+ const payNow_F = isLastPeriodOfTaxYear_F(p) || (p === totalPeriods_F);
+ if(payNow_F && eligibleAge && !incomeExceededThisYear){
+  const matched = memberSumThisYear * (govtRate/100);
+  govtCont = Math.min(govtCap, matched);
+ }
+  const closingBalance = balanceAfterInterest + memberCont + employerCont + govtCont;
+
+  totalReturns += interestEarned;
+  totalMember += memberCont;
+  totalEmployer += employerCont;
+  totalGovt += govtCont;
+
+  if(payNow_F){
+ currentTaxYear = getTaxYearNumber_F(p+1);
+ memberSumThisYear = 0;
+ incomeExceededThisYear = false;
+ }
+  balance = closingBalance;
  }
 
- function calculate(){
-   const a=+g('age').value,
-         wa=+g('withdrawalAge').value,
-         b=+clean(g('currentBalance').value)||0,
-         i=+clean(g('annualIncome').value)||0,
-         mr=+g('memberRate').value||0,
-         er=+g('employerRate').value||0,
-         s=g('strategy').value,
-         nza=+(coupleMode ? g('nzSuperAgeShared').value : g('nzSuperAge').value) || 65,
-         nzi=(coupleMode ? g('nzSuperIndexationShared').value : g('nzSuperIndexation').value),
-         ir=(coupleMode ? g('incomeRuleShared').value : g('incomeRule').value),
-         rr=+(coupleMode ? g('retirementReturnShared').value : g('retirementReturn').value) || 0,
-         wg=+(coupleMode ? g('wageGrowthShared').value : g('wageGrowth').value) || 0,
-         inf=+(coupleMode ? g('inflationRateShared').value : g('inflationRate').value) || 0,
-         fhYear=+g('homeStartYear').value,
-         fhAmount=g('homeStartAmount').value?+clean(g('homeStartAmount').value):0;
+ return {nom: balance, mTot: totalMember, eTot: totalEmployer, gTot: totalGovt, rTot: totalReturns};
+return {nom: balance, mTot: totalMember, eTot: totalEmployer, gTot: totalGovt, rTot: totalReturns};
+}
 
-   g('errorMessage').innerHTML='';
-   if(!a||!wa||!i||!s){g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
-   if(wa<60||wa<=a){g('errorMessage').innerHTML='<div class="error">⚠️ Invalid age range</div>';g('resultsContent').style.display='none';g('resultsPlaceholder').style.display='block';return;}
+function calculate(){
+  try{
+    updateDatesUI();
 
-   const iR=inf/100,rR=rr/100,wR=wg/100,
-         ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg,reductionPeriods,suspensionPeriods,fhYear,fhAmount),
-         nom=ks.nom,mTot=ks.mTot,eTot=ks.eTot,gTot=ks.gTot,fhWithdrawn=ks.fhWithdrawn,yrs=wa-a, months=yrs*12, inflYears=(months-1)/12,
-         real=nom/Math.pow(1+iR,inflYears),rmTot=mTot/Math.pow(1+iR,inflYears),reTot=eTot/Math.pow(1+iR,inflYears),rgTot=gTot/Math.pow(1+iR,inflYears),
-         d=inflation?real:nom,
-         ds=inflation?b:b*Math.pow(1+iR,inflYears),
-         dm=inflation?rmTot:mTot,
-         de=inflation?reTot:eTot,
-         dgg=inflation?rgTot:gTot,
-         dFh=inflation?fhWithdrawn/Math.pow(1+iR,inflYears):fhWithdrawn,
-         r=d-ds-dm-de-dgg;
+    // UPDATED: start age used for timing
+    const a = getStartAge(), wa = +g('withdrawalAge').value;
 
-   g('breakdownStarting').textContent=fmt(ds);
-   g('breakdownMember').textContent=fmt(dm);
-   g('breakdownEmployer').textContent=fmt(de);
-   g('breakdownGovernment').textContent=fmt(dgg);
-   g('breakdownReturns').textContent=fmt(Math.max(0,r));
+    const b=+clean(g('currentBalance').value)||0;
+    const i=+clean(g('annualIncome').value)||0;
+    const mr=+g('memberRate').value||0;
+    const er=+g('employerRate').value||0;
+    const s=g('strategy').value;
 
-   const hsi=g('homeStartBreakdownItem');
-   if(homeStartEnabled&&dFh>0){hsi.style.display='flex';g('breakdownHomeStart').textContent=fmt(dFh);}else{hsi.style.display='none';}
+    const rr=+(coupleMode?g('retirementReturnShared').value:g('retirementReturn').value)||0;
+    const wg=+(coupleMode?g('wageGrowthShared').value:g('wageGrowth').value)||0;
+    const inf=+(coupleMode?g('inflationRateShared').value:g('inflationRate').value)||0;
+    const nza=+(coupleMode?g('nzSuperAgeShared').value:g('nzSuperAge').value)||65;
+    const nzi=(coupleMode?g('nzSuperIndexationShared').value:g('nzSuperIndexation').value);
+    const ir=(coupleMode?g('incomeRuleShared').value:g('incomeRule').value);
 
-   const nzBaseNow = coupleMode ? (+clean(g('nzSuperAnnualShared').value)||0) : (+clean(g('nzSuperAnnual').value)||0);
+    g('errorMessage').innerHTML='';
 
-   function indexFactor(years){
-     const y=Math.max(0,years);
-     if(nzi==='none') return 1;
-     if(nzi==='cpi') return Math.pow(1+inf/100,y);
-     if(nzi==='wage') return Math.pow(1+wg/100,y);
-     if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
-     return 1;
-   }
+    if(!a || !wa || !i || !s){
+      g('resultsContent').style.display='none';
+      g('resultsPlaceholder').style.display='block';
+      return;
+    }
+    if(wa<60 || wa<=a){
+      g('errorMessage').innerHTML="<div class='error'>⚠️ Invalid age range</div>";
+      g('resultsContent').style.display='none';
+      g('resultsPlaceholder').style.display='block';
+      return;
+    }
 
-   const yearsToEligibility=Math.max(0,nza-a);
-   const nzAtEligibility=nzBaseNow*indexFactor(yearsToEligibility);
-   g('nzSuperValue').textContent=fmt(nzAtEligibility);
-   g('nzSuperIndexationDetails').textContent =
-     nzi==='none' ? 'Static' :
-     nzi==='cpi' ? 'Indexed (CPI)' :
-     nzi==='wage' ? 'Indexed (Wage)' :
-     'Indexed (Hybrid)';
+    govtRate = +(coupleMode?g('sharedGovtRate').value:g('govtRate').value) || govtRate;
+    govtThreshold = +clean(coupleMode?g('sharedGovtThreshold').value:g('govtThreshold').value) || govtThreshold;
+    govtCap = +clean(coupleMode?g('sharedGovtCap').value:g('govtCap').value) || govtCap;
 
-   let html='';
-   for(let ar=65;ar<=90;ar++){
-     const yf=ar-wa,
-           nom64=nom*Math.pow(1+rR,Math.max(0,yf)),
-           real64=nom64/Math.pow(1+iR,Math.max(0,yf)),
-           db=inflation?real64:nom64;
-     let ks_val=0;
-     if(ar>=wa){
-       if(ir==='4percent')ks_val=db*.04;
-       else if(ir==='6percent')ks_val=db*.06;
-       else ks_val=db/(90-ar);
-     }
-     let nzs=0;
-     if(ar>=nza){
-       nzs = nzAtEligibility * indexFactor(ar-nza);
-     }
-     const t=ks_val+nzs,rep=i>0?(t/i)*100:0;
-     html+=`<tr><td>${ar}</td><td>${fmt(ks_val)}</td><td>${fmt(nzs)}</td><td>${fmt(t)}</td><td>${rep.toFixed(1)}%</td></tr>`;
-   }
-   g('incomeTable').innerHTML=html;
+    const iR=inf/100, rR=rr/100;
+ // OPTION A: date-based horizon (year fraction)
+ let yearsTotalDate = getYearsTotalDateHorizon(wa);
+ if(!(isFinite(yearsTotalDate) && yearsTotalDate > 0)) yearsTotalDate = (wa - a); // fallback
+ const ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg, yearsTotalDate, true);
+ const yrs=yearsTotalDate;
+ const periodsInfl = Math.max(0, Math.round(yrs * 12));
+ const yrsInfl = periodsInfl / 12;
+ const inflFactor = Math.pow(1 + iR, yrsInfl);
+    const yourDisplayed = inflation ? (ks.nom/inflFactor) : ks.nom;
 
-   if(coupleMode){
-     const ap=+g('agePartner').value,
-           wap=+g('withdrawalAgePartner').value,
-           bp=+clean(g('currentBalancePartner').value)||0,
-           ip=+clean(g('annualIncomePartner').value)||0,
-           mrp=+g('memberRatePartner').value||0,
-           erp=+g('employerRatePartner').value||0,
-           sp=g('strategyPartner').value,
-           ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg,[],[],0,0),
-           iR_partner=inf/100,
-           realp=ksp.nom/Math.pow(1+iR_partner,wap-ap),
-           dp=inflation?realp:ksp.nom,
-           ba=+g('projectedBalance').textContent.replace(/[^0-9.-]/g,'');
-     g('projectedBalancePartner').textContent=fmt(dp);
-     g('withdrawalAgeDisplayPartner').textContent=wap;
-     g('combinedBalance').textContent=fmt(ba+dp);
-     g('coupleResults').classList.add('visible');
-   }else{
-     g('coupleResults').classList.remove('visible');
-   }
+    let headlineValue = yourDisplayed;
+    let label = "Projected KiwiSaver Balance";
 
-   g('projectedBalance').textContent=fmt(d);
-   g('withdrawalAgeDisplay').textContent=`At age ${wa}`;
-   g('resultsContent').style.display='block';
-   g('resultsPlaceholder').style.display='none';
- }
- </script>
+    if(coupleMode){
+      const ap=+g('agePartner').value, wap=+g('withdrawalAgePartner').value;
+      const bp=+clean(g('currentBalancePartner').value)||0;
+      const ip=+clean(g('annualIncomePartner').value)||0;
+      const mrp=+g('memberRatePartner').value||0;
+      const erp=+g('employerRatePartner').value||0;
+      const sp=g('strategyPartner').value;
+
+      const ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg, undefined, false);
+      const yrsp=wap-ap;
+      const inflFactorP=Math.pow(1+iR,yrsp);
+      const partnerDisplayed = inflation ? (ksp.nom/inflFactorP) : ksp.nom;
+
+      headlineValue = yourDisplayed + partnerDisplayed;
+      label = "Joint KiwiSaver Balance";
+      g('yourBalanceValue').textContent = fmt(yourDisplayed);
+      g('partnerBalanceValue').textContent = fmt(partnerDisplayed);
+      g('coupleResults').classList.add('visible');
+    } else {
+      g('coupleResults').classList.remove('visible');
+    }
+
+    g('headlineBalanceLabel').textContent = label;
+    g('projectedBalance').textContent = fmt(headlineValue);
+    g('withdrawalAgeDisplay').textContent = coupleMode ? "At each partner’s withdrawal age (displayed as real/nominal)" : ("At age " + wa);
+
+    // Balance breakdown (individual mode) — FIXED
+    try {
+      if(!coupleMode){
+        var inflFactorBD = inflFactor; // reuse headline factor (prevents NaN->0.00)
+        var startingDisp = inflation ? (b / inflFactorBD) : b;
+        var memberDisp   = inflation ? (ks.mTot / inflFactorBD) : ks.mTot;
+        var employerDisp = inflation ? (ks.eTot / inflFactorBD) : ks.eTot;
+        var govtDisp     = inflation ? (ks.gTot / inflFactorBD) : ks.gTot;
+        var returnsVal   = (ks.rTot !== undefined) ? ks.rTot : (ks.nom - b - ks.mTot - ks.eTot - ks.gTot);
+        var returnsDisp  = inflation ? (returnsVal / inflFactorBD) : returnsVal;
+
+        if(g('breakdownStarting'))   g('breakdownStarting').textContent = fmt(startingDisp);
+        if(g('breakdownMember'))     g('breakdownMember').textContent = fmt(memberDisp);
+        if(g('breakdownEmployer'))   g('breakdownEmployer').textContent = fmt(employerDisp);
+        if(g('breakdownGovernment')) g('breakdownGovernment').textContent = fmt(govtDisp);
+        if(g('breakdownReturns'))    g('breakdownReturns').textContent = fmt(returnsDisp);
+      }
+    } catch(_e) { console.warn(_e); }
+
+    // NZ Super NPV block
+    const nzBaseNow = +clean(coupleMode?g('nzSuperAnnualShared').value:g('nzSuperAnnual').value)||0;
+
+    function indexFactor(years){
+      const y=Math.max(0,years);
+      if(nzi==='none') return 1;
+      if(nzi==='cpi') return Math.pow(1+inf/100,y);
+      if(nzi==='wage') return Math.pow(1+wg/100,y);
+      if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
+      return 1;
+    }
+
+    const ageToday = getAgeToday();
+      const yearsToEligibility = Math.max(0, nza - ageToday);
+    const nzAtEligibility=nzBaseNow*indexFactor(yearsToEligibility);
+
+    let nzsNpvAtEligibility=0;
+    for(let t=0;t<25;t++){
+      const payment=nzAtEligibility*indexFactor(t);
+      nzsNpvAtEligibility += payment/Math.pow(1+rR,t);
+    }
+
+    const nzsDisplayed = inflation ? (nzsNpvAtEligibility/Math.pow(1+rR,yearsToEligibility)) : nzsNpvAtEligibility;
+    g('nzSuperValue').textContent = fmt(nzsDisplayed);
+    g('nzSuperIndexationDetails').textContent =
+      (nzi==='none'?'Static':nzi==='cpi'?'Indexed (CPI)':nzi==='wage'?'Indexed (Wage)':'Indexed (Hybrid)') +
+      (inflation ? " — PV to today" : " — PV to eligibility");
+
+    // Income table (individual and couple)
+    {
+      let partnerNomAtRet = 0;
+      let partnerWithdrawAge = 0;
+      let partnerIncomeDenom = 0;
+
+      if(coupleMode){
+        const ap=+g('agePartner').value, wap=+g('withdrawalAgePartner').value;
+        const bp=+clean(g('currentBalancePartner').value)||0;
+        const ip=+clean(g('annualIncomePartner').value)||0;
+        const mrp=+g('memberRatePartner').value||0;
+        const erp=+g('employerRatePartner').value||0;
+        const sp=g('strategyPartner').value;
+
+        const ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg, undefined, false);
+        partnerNomAtRet = ksp.nom;
+        partnerWithdrawAge = wap;
+        partnerIncomeDenom = ip;
+      }
+
+      function ksIncomeAtAge(balanceAtRet, withdrawAge, ageNow){
+        if(ageNow < withdrawAge) return 0;
+        const yf = ageNow - withdrawAge;
+        const nomAtAge = balanceAtRet * Math.pow(1 + rR, Math.max(0,yf));
+        const realAtAge = nomAtAge / Math.pow(1 + iR, Math.max(0,yf));
+        const db = inflation ? realAtAge : nomAtAge;
+        if(ir==='4percent') return db*0.04;
+        if(ir==='6percent') return db*0.06;
+        return db/(90-ageNow);
+      }
+
+      const denom = coupleMode ? (i + partnerIncomeDenom) : i;
+      let html='';
+
+      for(let ar=65; ar<=90; ar++){
+        const ksYou = ksIncomeAtAge(ks.nom, wa, ar);
+        const ksPartner = coupleMode ? ksIncomeAtAge(partnerNomAtRet, partnerWithdrawAge, ar) : 0;
+        const ksTotal = ksYou + ksPartner;
+
+        let nzs=0;
+        if(ar>=nza) nzs = nzAtEligibility*indexFactor(ar-nza);
+
+        const total = ksTotal + nzs;
+        const rep = denom>0 ? (total/denom)*100 : 0;
+
+        html += `<tr><td>${ar}</td><td>${fmt(ksTotal)}</td><td>${fmt(nzs)}</td><td>${fmt(total)}</td><td>${rep.toFixed(1)}%</td></tr>`;
+      }
+
+      g('incomeTable').innerHTML = html;
+    }
+
+    g('resultsContent').style.display='block';
+    g('resultsPlaceholder').style.display='none';
+
+  } catch(e){
+    var em = document.getElementById('errorMessage');
+    if(em){ em.innerHTML = "<div class='error'>⚠️ JavaScript error: " + (e && e.message ? e.message : e) + "</div>"; }
+    var rc = document.getElementById('resultsContent');
+    var ph = document.getElementById('resultsPlaceholder');
+    if(rc) rc.style.display='none';
+    if(ph) ph.style.display='block';
+    console.error(e);
+  }
+}
+
+function updateToggleButtons(){
+  document.querySelectorAll('.inflation-toggle').forEach(b=>{
+    b.classList.toggle('active',(b.dataset.value==='true')===inflation);
+  });
+  document.querySelectorAll('.fiscal-toggle').forEach(b=>{
+    b.classList.toggle('active',(b.dataset.value==='true')===fiscalDrag);
+  });
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.currency-input').forEach(input=>{
+    input.addEventListener('input',function(){ this.value=formatCurrency(this.value); });
+    input.addEventListener('blur',()=>calculate());
+  });
+
+  g('individualBtn').addEventListener('click',()=>{ coupleMode=false; toggleMode(); calculate(); });
+  g('coupleBtn').addEventListener('click',()=>{ coupleMode=true; toggleMode(); calculate(); });
+
+  document.querySelectorAll('.inflation-toggle').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      inflation = btn.dataset.value==='true';
+      updateToggleButtons(); calculate();
+    });
+  });
+
+  document.querySelectorAll('.fiscal-toggle').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      fiscalDrag = btn.dataset.value==='true';
+      updateToggleButtons(); calculate();
+    });
+  });
+
+  // keep DOB/model start date choice in sync
+  if(g('dob')) g('dob').addEventListener('change', () => { updateDatesUI(); calculate(); });
+  if(g('modelStartChoice')) g('modelStartChoice').addEventListener('change', () => { _fixedTodayStart = null; updateDatesUI(); calculate(); });
+
+  [
+    'age','withdrawalAge','currentBalance','annualIncome','memberRate','employerRate','strategy',
+    'agePartner','withdrawalAgePartner','currentBalancePartner','annualIncomePartner','memberRatePartner','employerRatePartner','strategyPartner',
+    'govtRate','govtThreshold','govtCap',
+    'sharedGovtRate','sharedGovtThreshold','sharedGovtCap',
+    'retirementReturn','wageGrowth','inflationRate','nzSuperAge','nzSuperAnnual','nzSuperIndexation','incomeRule',
+    'retirementReturnShared','wageGrowthShared','inflationRateShared','nzSuperAgeShared','nzSuperAnnualShared','nzSuperIndexationShared','incomeRuleShared'
+  ].forEach(id=>{
+    if(g(id)) g(id).addEventListener('change',()=>calculate());
+  });
+
+  toggleMode();
+  updateToggleButtons();
+  calculate();
+});
+</script>
+
 </body>
 </html>
