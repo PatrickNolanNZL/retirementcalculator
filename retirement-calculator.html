@@ -194,7 +194,7 @@
         <div id="nzContent" class="collapsible-content individual-only">
           <div class="input-row">
             <div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAge" value="65"></div>
-            <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnual" value="26,689" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (single)</p></div>
+            <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnual" value="28,950" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (single)</p></div>
           </div>
           <div class="form-group">
             <label>Indexation</label>
@@ -292,7 +292,7 @@
         <div id="sharedNZContent" class="collapsible-content">
           <div class="input-row">
             <div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAgeShared" value="65"></div>
-            <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnualShared" value="40,476" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (couple)</p></div>
+            <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnualShared" value="43,074" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (couple)</p></div>
           </div>
           <div class="form-group">
             <label>Indexation</label>
@@ -863,34 +863,57 @@ function calculate(){
     } catch(_e) { console.warn(_e); }
 
     // NZ Super NPV block
-    const nzBaseNow = +clean(coupleMode?g('nzSuperAnnualShared').value:g('nzSuperAnnual').value)||0;
+      const nzBaseSingleNow = +clean(g('nzSuperAnnual').value) || 0; // single annual (after tax)
+      const nzBaseCoupleNow = +clean(g('nzSuperAnnualShared').value) || 0; // couple annual (total, after tax)
 
-    function indexFactor(years){
-      const y=Math.max(0,years);
-      if(nzi==='none') return 1;
-      if(nzi==='cpi') return Math.pow(1+inf/100,y);
-      if(nzi==='wage') return Math.pow(1+wg/100,y);
-      if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
-      return 1;
-    }
+      function indexFactor(years){
+        const y=Math.max(0,years);
+        if(nzi==='none') return 1;
+        if(nzi==='cpi') return Math.pow(1+inf/100,y);
+        if(nzi==='wage') return Math.pow(1+wg/100,y);
+        if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
+        return 1;
+      }
 
-    const ageToday = getAgeToday();
-      const yearsToEligibility = Math.max(0, nza - ageToday);
-    const nzAtEligibility=nzBaseNow*indexFactor(yearsToEligibility);
+      // Age today (primary DOB-based); partner age today comes from input (no partner DOB in this tool)
+      const ageToday = getAgeToday();
+      const ageTodayPartner = coupleMode ? (+g('agePartner').value || 0) : NaN;
+      const yearsToEligPrimary = Math.max(0, nza - ageToday);
+      const yearsToEligPartner = coupleMode ? Math.max(0, nza - ageTodayPartner) : NaN;
+      const firstEligibility = coupleMode ? Math.min(yearsToEligPrimary, yearsToEligPartner) : yearsToEligPrimary;
 
-    let nzsNpvAtEligibility=0;
-    for(let t=0;t<25;t++){
-      const payment=nzAtEligibility*indexFactor(t);
-      nzsNpvAtEligibility += payment/Math.pow(1+rR,t);
-    }
+      // Base annual amounts indexed from 'now' to the first-eligibility year
+      const nzAtEligibility = nzBaseSingleNow * indexFactor(firstEligibility); // retained for single-mode income table
+      const nzSingleAtEligibility = nzBaseSingleNow * indexFactor(firstEligibility);
+      const nzCoupleAtEligibility = nzBaseCoupleNow * indexFactor(firstEligibility);
 
-    const nzsDisplayed = inflation ? (nzsNpvAtEligibility/Math.pow(1+rR,yearsToEligibility)) : nzsNpvAtEligibility;
-    g('nzSuperValue').textContent = fmt(nzsDisplayed);
-    g('nzSuperIndexationDetails').textContent =
-      (nzi==='none'?'Static':nzi==='cpi'?'Indexed (CPI)':nzi==='wage'?'Indexed (Wage)':'Indexed (Hybrid)') +
-      (inflation ? " — PV to today" : " — PV to eligibility");
+      // Present value to TODAY of up to 25 years of NZ Super payments starting at first eligibility.
+      // In couple mode, payment switches from single->couple when the second partner reaches eligibility.
+      let nzsPvToday = 0;
+      for(let t=0; t<25; t++){
+        const yearsFromNow = firstEligibility + t;
+        let paymentAtT = 0;
+        if(!coupleMode){
+          paymentAtT = nzBaseSingleNow * indexFactor(yearsFromNow);
+        } else {
+          const primaryAgeAtT = ageToday + yearsFromNow;
+          const partnerAgeAtT = ageTodayPartner + yearsFromNow;
+          const eligibleCount = (primaryAgeAtT >= nza ? 1 : 0) + (partnerAgeAtT >= nza ? 1 : 0);
+          if(eligibleCount === 1){
+            paymentAtT = nzBaseSingleNow * indexFactor(yearsFromNow);
+          } else if(eligibleCount === 2){
+            paymentAtT = nzBaseCoupleNow * indexFactor(yearsFromNow);
+          }
+        }
+        nzsPvToday += paymentAtT / Math.pow(1 + rR, yearsFromNow);
+      }
 
-    // Income table (individual and couple)
+      const nzsDisplayed = inflation ? nzsPvToday : (nzsPvToday * Math.pow(1 + rR, firstEligibility));
+      g('nzSuperValue').textContent = fmt(nzsDisplayed);
+      g('nzSuperIndexationDetails').textContent =
+        (nzi==='none'?'Static':nzi==='cpi'?'Indexed (CPI)':nzi==='wage'?'Indexed (Wage)':'Indexed (Hybrid)') +
+        (inflation ? " — PV to today" : " — PV to first eligibility");
+// Income table (individual and couple)
     {
       let partnerNomAtRet = 0;
       let partnerWithdrawAge = 0;
@@ -921,18 +944,48 @@ function calculate(){
         return db/(90-ageNow);
       }
 
-      const denom = coupleMode ? (i + partnerIncomeDenom) : i;
+      // --- Replacement rate denominator: earnings just before retirement ---
+      // OECD-style denominator uses earnings in the year immediately before retirement (not earnings today).
+      const yearsToRetPrimary = Math.max(0, wa - a);
+      const earningsAtRetPrimary = i * Math.pow(1 + (wg/100), yearsToRetPrimary);
+
+      let earningsAtRetPartner = 0;
+      if(coupleMode){
+        const apDen = +g('agePartner').value || 0;
+        const wapDen = +g('withdrawalAgePartner').value || 0;
+        const ipDen = +clean(g('annualIncomePartner').value) || 0;
+        const yearsToRetPartner = Math.max(0, wapDen - apDen);
+        earningsAtRetPartner = ipDen * Math.pow(1 + (wg/100), yearsToRetPartner);
+      }
+
+      const denom = coupleMode ? (earningsAtRetPrimary + earningsAtRetPartner) : earningsAtRetPrimary;
+
       let html='';
 
       for(let ar=65; ar<=90; ar++){
         const ksYou = ksIncomeAtAge(ks.nom, wa, ar);
         const ksPartner = coupleMode ? ksIncomeAtAge(partnerNomAtRet, partnerWithdrawAge, ar) : 0;
         const ksTotal = ksYou + ksPartner;
-
-        let nzs=0;
-        if(ar>=nza) nzs = nzAtEligibility*indexFactor(ar-nza);
-
-        const total = ksTotal + nzs;
+      // NZ Super (simplified single vs couple structure; eligibility assessed per person by age)
+      let nzs = 0;
+      if(!coupleMode){
+        // Single mode: pay single rate only once primary reaches eligibility age
+        if(ar >= nza) nzs = nzAtEligibility * indexFactor(ar - nza);
+      } else {
+        // Couple mode: assess each person separately at this point in time.
+        // 'ar' is primary person's age in the table. Partner's age advances by the same elapsed years.
+        const elapsedYears = ar - a;
+        const partnerAgeNow = (+g('agePartner').value || 0) + elapsedYears;
+        const eligibleCount = (ar >= nza ? 1 : 0) + (partnerAgeNow >= nza ? 1 : 0);
+        if(eligibleCount === 1){
+          // Exactly one eligible: pay single rate
+          nzs = nzSingleAtEligibility * indexFactor(ar - nza);
+        } else if(eligibleCount === 2){
+          // Both eligible: pay couple rate (total for household)
+          nzs = nzCoupleAtEligibility * indexFactor(ar - nza);
+        }
+      }
+      const total = ksTotal + nzs;
         const rep = denom>0 ? (total/denom)*100 : 0;
 
         html += `<tr><td>${ar}</td><td>${fmt(ksTotal)}</td><td>${fmt(nzs)}</td><td>${fmt(total)}</td><td>${rep.toFixed(1)}%</td></tr>`;
