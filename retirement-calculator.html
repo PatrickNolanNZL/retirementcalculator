@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Retirement Income Calculator</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:linear-gradient(135deg,#E8F4F8 0%,#F0E8FF 100%);min-height:100vh;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+:root{--sorted-orange:#f0610f;--sorted-violet:#ded6fc;--sorted-grey:#ededf5;--sorted-red:#ff0540;--navy-1:#08163f;--navy-2:#0f2a6b;--text-on-navy:#ffffff;--muted-on-navy:rgba(255,255,255,.78);--card-ink:#212121}
+    body{background:linear-gradient(135deg,var(--navy-2) 0%,var(--navy-1) 100%);min-height:100vh;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
     .container{max-width:2000px;margin:0 auto}
-    .header{text-align:center;margin-bottom:40px}
-    h1{color:#1A237E;font-size:36px;font-weight:600;margin-bottom:12px}
-    .subtitle{color:#1A237E;font-size:18px;margin-bottom:24px}
+    .header{text-align:center;margin-bottom:32px;padding-top:10px}
+    h1{color:var(--text-on-navy);font-size:36px;font-weight:600;margin-bottom:12px;font-family:'VC Henrietta','Georgia','Times New Roman',serif}
+    .subtitle{color:var(--muted-on-navy);font-size:18px;margin-bottom:24px}
     .mode-toggle{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px}
     .mode-toggle .toggle-btn{font-size:18px;padding:16px 32px;border-radius:10px}
     .layout-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px}
@@ -20,32 +20,31 @@
     .layout-wrapper:not(.couple) > .results-section{grid-column:2/3}
     .layout-wrapper.couple .results-section{grid-column:1/-1}
     .card{background:white;border-radius:12px;padding:32px;box-shadow:0 4px 12px rgba(0,0,0,.1);border:1px solid #F0F0F0}
-    .card h2{color:#1A237E;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px;border-bottom:2px solid #F0F0F0;padding-bottom:12px}
-    .card h3{color:#1A237E;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:20px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;background:#F5F6FA;padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
+    .card h2{color:var(--card-ink);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px;border-bottom:2px solid #F0F0F0;padding-bottom:12px}
+    .card h3{color:var(--card-ink);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:20px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;background:var(--sorted-grey);padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
     .card h3:first-of-type{margin-top:0}
-    .nested-h3{color:#1A237E;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:16px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;background:#F5F6FA;padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
+    .nested-h3{color:var(--card-ink);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:16px 0 12px;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;background:var(--sorted-grey);padding:12px;border-radius:6px;margin-left:-12px;margin-right:-12px}
     .form-group{margin-bottom:16px}
     label{display:block;margin-bottom:6px;color:#212121;font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
     input,select{width:100%;padding:10px 12px;border:2px solid #E8E8E8;border-radius:8px;font-size:14px;color:#212121;transition:all .2s}
-    input:focus,select:focus{outline:none;border-color:#1A237E;box-shadow:0 0 0 3px rgba(26,35,126,.1)}
+    input:focus,select:focus{outline:none;border-color:var(--sorted-orange);box-shadow:0 0 0 3px rgba(240,97,15,.18)}
     .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .input-with-unit{display:flex}
     .input-with-unit input{border-radius:8px 0 0 8px}
-    .unit{display:flex;align-items:center;padding:0 12px;background:#F5F6FA;border:2px solid #E8E8E8;border-left:none;border-radius:0 8px 8px 0;font-weight:600;color:#37474F;font-size:12px}
+    .unit{display:flex;align-items:center;padding:0 12px;background:var(--sorted-grey);border:2px solid #E8E8E8;border-left:none;border-radius:0 8px 8px 0;font-weight:600;color:#37474F;font-size:12px}
     .note{font-size:10px;color:#999;margin-top:4px}
     .label-note{font-size:11px;color:#999;text-transform:none;letter-spacing:normal;font-weight:400;margin-top:4px}
     .toggle-group{display:flex;gap:8px;margin-top:6px}
     .toggle-btn{flex:1;padding:8px;border:2px solid #E8E8E8;background:white;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;cursor:pointer;transition:all .2s;color:#37474F}
-    .toggle-btn.active{background:#1A237E;color:white;border-color:#1A237E}
-    .toggle-btn:hover{border-color:#1A237E}
-    .result-item{background:#F5F6FA;padding:16px;border-radius:8px;margin-bottom:12px;border-left:4px solid #01796F}
+    .toggle-btn.active{background:var(--sorted-orange);color:white;border-color:var(--sorted-orange)}
+    .result-item{background:var(--sorted-grey);padding:16px;border-radius:8px;margin-bottom:12px;border-left:4px solid var(--sorted-orange)}
     .result-label{color:#757575;font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
-    .result-value{color:#1A237E;font-size:28px;font-weight:700;margin-top:4px;font-family:monospace}
+    .result-value{color:var(--card-ink);font-size:28px;font-weight:700;margin-top:4px;font-family:monospace}
     .result-subtext{color:#999;font-size:11px;margin-top:4px}
     .breakdown{border:2px solid #E8E8E8;border-radius:8px;margin-top:12px;overflow:hidden}
-    .breakdown-header{padding:12px;background:#F5F6FA;cursor:pointer;display:flex;justify-content:space-between;font-weight:600;color:#1A237E;user-select:none}
+    .breakdown-header{padding:12px;background:var(--sorted-grey);cursor:pointer;display:flex;justify-content:space-between;font-weight:600;color:var(--card-ink);user-select:none}
     .breakdown-header:hover{background:#EEEFF5}
-    .breakdown-header.expanded{background:#1A237E;color:white}
+    .breakdown-header.expanded{background:var(--card-ink);color:white}
     .breakdown-toggle{transition:transform .2s}
     .breakdown-header.expanded .breakdown-toggle{transform:rotate(180deg)}
     .breakdown-content{display:none;padding:12px;border-top:1px solid #E8E8E8}
@@ -53,12 +52,12 @@
     .breakdown-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #E8E8E8;font-size:12px}
     .breakdown-item:last-child{border-bottom:none}
     table{width:100%;margin-top:16px;border-collapse:collapse;font-size:11px}
-    th{background:#F5F6FA;padding:8px;text-align:right;font-weight:600;color:#1A237E;border-bottom:2px solid #E8E8E8}
+    th{background:var(--sorted-grey);padding:8px;text-align:right;font-weight:600;color:var(--card-ink);border-bottom:2px solid #E8E8E8}
     th:first-child{text-align:left}
     td{padding:8px;border-bottom:1px solid #F0F0F0;text-align:right}
     td:first-child{text-align:left}
-    .info{background:#E3F2FD;border-left:4px solid #01796F;padding:12px;border-radius:8px;margin-top:16px;color:#004085;font-size:12px}
-    .error{background:#FFEBEE;border-left:4px solid #E74C3C;padding:12px;border-radius:8px;color:#C62828;margin-bottom:16px}
+    .info{background:rgba(222,214,252,.22);border-left:4px solid var(--sorted-orange);padding:12px;border-radius:8px;margin-top:16px;color:var(--card-ink);font-size:12px}
+    .error{background:#FFEBEE;border-left:4px solid var(--sorted-red);padding:12px;border-radius:8px;color:#C62828;margin-bottom:16px}
     .divider{border-top:1px solid #F0F0F0;margin:20px 0}
     .placeholder{text-align:center;padding:40px 20px;color:#999}
     .couple-results{display:none}
@@ -71,14 +70,19 @@
     .individual-only.hidden{display:none}
     .collapsible-content{display:none}
     .collapsible-content.show{display:block}
-  </style>
+  
+/* Sorted-like dark header controls */
+.mode-toggle .toggle-btn{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22);color:var(--text-on-navy)}
+.mode-toggle .toggle-btn:hover{border-color:var(--sorted-orange)}
+.mode-toggle .toggle-btn.active{background:var(--sorted-orange);border-color:var(--sorted-orange);color:#fff}
+
+</style>
 </head>
 <body>
 <!-- PATCH: couple income table visible + couple RR table enabled (minimal JS edits) -->
 <div class="container">
   <div class="header">
     <h1>Retirement Income Calculator</h1>
-    <p class="subtitle">Calculate your projected KiwiSaver balance and retirement income — BASELINE FIXED (govt+startdate)</p>
     <div class="mode-toggle">
       <button class="toggle-btn active" id="individualBtn">Individual</button>
       <button class="toggle-btn" id="coupleBtn">Couple</button>
@@ -90,31 +94,28 @@
 
       <!-- YOUR DETAILS -->
       <div class="card" id="yourCard">
-        <h2>Your Details</h2>
+        <h2>Details</h2>
 
-        <h3 id="datesHeader" onclick="toggleCollapsible('dates')">Dates</h3>
-        <div id="datesContent" class="collapsible-content show">
+        <h3 id="datesHeader" onclick="toggleCollapsible(&#39;dates&#39;)">Key information</h3>
+        <div id="datesFields" class="collapsible-content">
           <div class="input-row">
             <div class="form-group">
               <label>Date of birth</label>
-              <input type="date" id="dob" value="1991-01-03" />
-              <p class="label-note">Used to calculate current age and the model start date.</p>
-            </div>
+              <input type="date" id="dob" value="1991-01-03">
+</div>
 
             <!-- UPDATED: dropdown instead of read-only text -->
             <div class="form-group">
               <label>Model start date</label>
               <select id="modelStartChoice">
- <option value="today" selected>Today</option>
+ <option value="today" selected="">Today</option>
  <option value="birthdayThisYear">Birthday this calendar year</option>
  </select>
-              <p class="label-note">Choose whether projections start today or on your birthday in the current calendar year.</p>
-            </div>
-          </div>
+</div>
         </div>
 
         <div class="input-row">
-          <div class="form-group"><label>Current Age</label><input type="number" id="age" value="35" min="18" max="100" readonly></div>
+          <div class="form-group"><label>Current Age</label><input type="number" id="age" value="35" min="18" max="100" readonly=""></div>
           <div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawalAge" value="65" min="60" max="100"></div>
         </div>
 
@@ -133,14 +134,92 @@
           <select id="strategy">
             <option value="defensive">Defensive</option>
             <option value="conservative">Conservative</option>
-            <option value="balanced" selected>Balanced</option>
+            <option value="balanced" selected="">Balanced</option>
             <option value="growth">Growth</option>
             <option value="aggressive">Aggressive</option>
           </select>
         </div>
 
+              </div>
+
+      <!-- Contribution breaks (optional) -->
+      <h3 id="breaksHeader" onclick="toggleCollapsible(&#39;breaks&#39;)">Contribution breaks</h3>
+      <div id="breaksContent" class="collapsible-content">
+        <p class="label-note">Optional: add up to three breaks (age ranges). Pause member-only or both member + employer. You can also add a one-off government top-up paid once at the end of the break (default $1,000 for parental leave).</p>
+
+        <div class="form-group">
+          <label>Break 1</label>
+          <div class="input-row">
+            <div class="form-group"><label>Start age</label><input type="number" id="break1StartAge" min="0" max="120" step="0.1" placeholder="e.g. 32"></div>
+            <div class="form-group"><label>End age</label><input type="number" id="break1EndAge" min="0" max="120" step="0.1" placeholder="e.g. 33"></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Pause type</label>
+              <select id="break1PauseType"><option value="member" selected="">Pause member only</option><option value="both">Pause member + employer</option></select>
+            </div>
+            <div class="form-group"><label>Govt top-up (one-off)</label>
+              <label class="label-note" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="break1TopUpEnabled"> Apply
+              </label>
+              <div class="input-with-unit" style="margin-top:8px;">
+                <input type="number" id="break1TopUpAmount" value="1000" min="0" step="1">
+                <div class="unit">$</div>
+              </div>
+              <p class="label-note">Paid once at end of break</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Break 2</label>
+          <div class="input-row">
+            <div class="form-group"><label>Start age</label><input type="number" id="break2StartAge" min="0" max="120" step="0.1"></div>
+            <div class="form-group"><label>End age</label><input type="number" id="break2EndAge" min="0" max="120" step="0.1"></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Pause type</label>
+              <select id="break2PauseType"><option value="member" selected="">Pause member only</option><option value="both">Pause member + employer</option></select>
+            </div>
+            <div class="form-group"><label>Govt top-up (one-off)</label>
+              <label class="label-note" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="break2TopUpEnabled"> Apply
+              </label>
+              <div class="input-with-unit" style="margin-top:8px;">
+                <input type="number" id="break2TopUpAmount" value="1000" min="0" step="1">
+                <div class="unit">$</div>
+              </div>
+              <p class="label-note">Paid once at end of break</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Break 3</label>
+          <div class="input-row">
+            <div class="form-group"><label>Start age</label><input type="number" id="break3StartAge" min="0" max="120" step="0.1"></div>
+            <div class="form-group"><label>End age</label><input type="number" id="break3EndAge" min="0" max="120" step="0.1"></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Pause type</label>
+              <select id="break3PauseType"><option value="member" selected="">Pause member only</option><option value="both">Pause member + employer</option></select>
+            </div>
+            <div class="form-group"><label>Govt top-up (one-off)</label>
+              <label class="label-note" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="break3TopUpEnabled"> Apply
+              </label>
+              <div class="input-with-unit" style="margin-top:8px;">
+                <input type="number" id="break3TopUpAmount" value="1000" min="0" step="1">
+                <div class="unit">$</div>
+              </div>
+              <p class="label-note">Paid once at end of break</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
         <!-- Individual-only settings -->
-        <h3 class="individual-only" id="govtHeader" onclick="toggleCollapsible('govt')">KiwiSaver Government Subsidy</h3>
+        <h3 class="individual-only" id="govtHeader" onclick="toggleCollapsible(&#39;govt&#39;)">KiwiSaver Government Subsidy</h3>
         <div id="govtContent" class="collapsible-content individual-only">
           <p class="label-note">Government contribution matching rate and income threshold</p>
           <div class="input-row">
@@ -164,7 +243,7 @@
           </div>
         </div>
 
-        <h3 class="individual-only" id="investHeader" onclick="toggleCollapsible('invest')">Investment Assumptions</h3>
+        <h3 class="individual-only" id="investHeader" onclick="toggleCollapsible(&#39;invest&#39;)">Investment Assumptions</h3>
         <div id="investContent" class="collapsible-content individual-only">
           <div class="input-row">
             <div class="form-group"><label>Return After 65</label><div class="input-with-unit"><input type="number" id="retirementReturn" value="2.0" step="0.1"><div class="unit">%</div></div></div>
@@ -175,7 +254,7 @@
             <div class="form-group">
               <label>Display Results</label>
               <div class="toggle-group">
-                <button type="button" class="toggle-btn active inflation-toggle" data-value="true">Real</button>
+                <button type="button" class="toggle-btn inflation-toggle active" data-value="true">Real</button>
                 <button type="button" class="toggle-btn inflation-toggle" data-value="false">Nominal</button>
               </div>
             </div>
@@ -190,29 +269,42 @@
           </div>
         </div>
 
-        <h3 class="nested-h3 individual-only" id="nzHeader" onclick="toggleCollapsible('nz')">NZ Super</h3>
+        <h3 class="nested-h3 individual-only" id="nzHeader" onclick="toggleCollapsible(&#39;nz&#39;)">NZ Super</h3>
         <div id="nzContent" class="collapsible-content individual-only">
           <div class="input-row">
             <div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAge" value="65"></div>
             <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnual" value="28,950" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (single)</p></div>
           </div>
-          <div class="form-group">
+          
+ <div class="input-row">
+  <div class="form-group">
+   <label>NPV Discount Rate</label>
+   <div class="input-with-unit"><input type="number" id="nzSuperDiscountRate" value="4.5" step="0.1"><div class="unit">%</div></div>
+   <p class="note">Used for NZ Super NPV (not KiwiSaver returns)</p>
+  </div>
+  <div class="form-group">
+   <label>NPV Horizon</label>
+   <div class="input-with-unit"><input type="number" id="nzSuperNpvHorizon" value="25" min="1" max="60" step="1"><div class="unit">years</div></div>
+   <p class="note">Years of payments included in NPV</p>
+  </div>
+ </div>
+<div class="form-group">
             <label>Indexation</label>
-            <select id="nzSuperIndexation">
+            <select id="nzSuperIndexation" onchange="calculate()">
               <option value="none">None</option>
-              <option value="cpi" selected>CPI</option>
+              <option value="cpi" selected="">CPI</option>
               <option value="wage">Wage</option>
               <option value="hybrid">Hybrid</option>
             </select>
           </div>
         </div>
 
-        <h3 class="nested-h3 individual-only" id="decumHeader" onclick="toggleCollapsible('decum')">Decumulation Strategy</h3>
+        <h3 class="nested-h3 individual-only" id="decumHeader" onclick="toggleCollapsible(&#39;decum&#39;)">Decumulation Strategy</h3>
         <div id="decumContent" class="collapsible-content individual-only">
           <div class="form-group">
             <label>Withdrawal Rule</label>
             <select id="incomeRule">
-              <option value="4percent" selected>4% Rule</option>
+              <option value="4percent" selected="">4% Rule</option>
               <option value="6percent">6% Rule</option>
               <option value="fixed-date">Fixed (Age 90)</option>
             </select>
@@ -223,8 +315,13 @@
       <!-- PARTNER DETAILS -->
       <div class="card partner-card" id="partnerCard">
         <h2>Partner Details</h2>
-        <div class="input-row">
-          <div class="form-group"><label>Current Age</label><input type="number" id="agePartner" value="35"></div>
+          <h3 id="partnerKeyHeader" onclick="toggleCollapsible(&#39;partnerKey&#39;)">Key information</h3>
+  <div id="partnerKeyContent" class="collapsible-content">
+<div class="input-row">
+          <div class="form-group">
+ <label>Date of birth</label>
+ <input type="date" id="dobPartner" value="1991-01-03">
+</div>
           <div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawalAgePartner" value="65"></div>
         </div>
         <div class="input-row">
@@ -240,18 +337,96 @@
           <select id="strategyPartner">
             <option value="defensive">Defensive</option>
             <option value="conservative">Conservative</option>
-            <option value="balanced" selected>Balanced</option>
+            <option value="balanced" selected="">Balanced</option>
             <option value="growth">Growth</option>
             <option value="aggressive">Aggressive</option>
           </select>
         </div>
+
+      <!-- Contribution breaks (optional) -->
+        </div>
+
+<h3 id="breaksPartnerHeader" onclick="toggleCollapsible(&#39;breaksPartner&#39;)">Contribution breaks</h3>
+      <div id="breaksPartnerContent" class="collapsible-content">
+        <p class="label-note">Optional: add up to three breaks (age ranges). Pause member-only or both member + employer. You can also add a one-off government top-up paid once at the end of the break (default $1,000 for parental leave).</p>
+
+        <div class="form-group">
+          <label>Break 1</label>
+          <div class="input-row">
+            <div class="form-group"><label>Start age</label><input type="number" id="break1StartAgePartner" min="0" max="120" step="0.1" placeholder="e.g. 32"></div>
+            <div class="form-group"><label>End age</label><input type="number" id="break1EndAgePartner" min="0" max="120" step="0.1" placeholder="e.g. 33"></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Pause type</label>
+              <select id="break1PauseTypePartner"><option value="member" selected="">Pause member only</option><option value="both">Pause member + employer</option></select>
+            </div>
+            <div class="form-group"><label>Govt top-up (one-off)</label>
+              <label class="label-note" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="break1TopUpEnabledPartner"> Apply
+              </label>
+              <div class="input-with-unit" style="margin-top:8px;">
+                <input type="number" id="break1TopUpAmountPartner" value="1000" min="0" step="1">
+                <div class="unit">$</div>
+              </div>
+              <p class="label-note">Paid once at end of break</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Break 2</label>
+          <div class="input-row">
+            <div class="form-group"><label>Start age</label><input type="number" id="break2StartAgePartner" min="0" max="120" step="0.1"></div>
+            <div class="form-group"><label>End age</label><input type="number" id="break2EndAgePartner" min="0" max="120" step="0.1"></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Pause type</label>
+              <select id="break2PauseTypePartner"><option value="member" selected="">Pause member only</option><option value="both">Pause member + employer</option></select>
+            </div>
+            <div class="form-group"><label>Govt top-up (one-off)</label>
+              <label class="label-note" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="break2TopUpEnabledPartner"> Apply
+              </label>
+              <div class="input-with-unit" style="margin-top:8px;">
+                <input type="number" id="break2TopUpAmountPartner" value="1000" min="0" step="1">
+                <div class="unit">$</div>
+              </div>
+              <p class="label-note">Paid once at end of break</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Break 3</label>
+          <div class="input-row">
+            <div class="form-group"><label>Start age</label><input type="number" id="break3StartAgePartner" min="0" max="120" step="0.1"></div>
+            <div class="form-group"><label>End age</label><input type="number" id="break3EndAgePartner" min="0" max="120" step="0.1"></div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Pause type</label>
+              <select id="break3PauseTypePartner"><option value="member" selected="">Pause member only</option><option value="both">Pause member + employer</option></select>
+            </div>
+            <div class="form-group"><label>Govt top-up (one-off)</label>
+              <label class="label-note" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="break3TopUpEnabledPartner"> Apply
+              </label>
+              <div class="input-with-unit" style="margin-top:8px;">
+                <input type="number" id="break3TopUpAmountPartner" value="1000" min="0" step="1">
+                <div class="unit">$</div>
+              </div>
+              <p class="label-note">Paid once at end of break</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       </div>
 
       <!-- SHARED SETTINGS -->
       <div class="card shared-settings" id="sharedSettingsCard">
         <h2>Shared Settings</h2>
 
-        <h3 id="sharedGovtHeader" onclick="toggleCollapsible('sharedGovt')">KiwiSaver Government Subsidy</h3>
+        <h3 id="sharedGovtHeader" onclick="toggleCollapsible(&#39;sharedGovt&#39;)">KiwiSaver Government Subsidy</h3>
         <div id="sharedGovtContent" class="collapsible-content">
           <div class="input-row">
             <div class="form-group"><label>Subsidy Rate</label><div class="input-with-unit"><input type="number" id="sharedGovtRate" value="25" step="0.1"><div class="unit">%</div></div></div>
@@ -262,7 +437,7 @@
           </div>
         </div>
 
-        <h3 id="sharedInvestHeader" onclick="toggleCollapsible('sharedInvest')">Investment Assumptions</h3>
+        <h3 id="sharedInvestHeader" onclick="toggleCollapsible(&#39;sharedInvest&#39;)">Investment Assumptions</h3>
         <div id="sharedInvestContent" class="collapsible-content">
           <div class="input-row">
             <div class="form-group"><label>Return After 65</label><div class="input-with-unit"><input type="number" id="retirementReturnShared" value="2.0" step="0.1"><div class="unit">%</div></div></div>
@@ -273,7 +448,7 @@
             <div class="form-group">
               <label>Display Results</label>
               <div class="toggle-group">
-                <button type="button" class="toggle-btn active inflation-toggle" data-value="true">Real</button>
+                <button type="button" class="toggle-btn inflation-toggle active" data-value="true">Real</button>
                 <button type="button" class="toggle-btn inflation-toggle" data-value="false">Nominal</button>
               </div>
             </div>
@@ -288,29 +463,42 @@
           </div>
         </div>
 
-        <h3 class="nested-h3" id="sharedNZHeader" onclick="toggleCollapsible('sharedNZ')">NZ Super</h3>
+        <h3 class="nested-h3" id="sharedNZHeader" onclick="toggleCollapsible(&#39;sharedNZ&#39;)">NZ Super</h3>
         <div id="sharedNZContent" class="collapsible-content">
           <div class="input-row">
             <div class="form-group"><label>Eligibility Age</label><input type="number" id="nzSuperAgeShared" value="65"></div>
             <div class="form-group"><label>Annual Rate</label><div class="input-with-unit"><input type="text" id="nzSuperAnnualShared" value="43,074" class="currency-input"><div class="unit">$</div></div><p class="note">2026 (couple)</p></div>
           </div>
-          <div class="form-group">
+          
+ <div class="input-row">
+  <div class="form-group">
+   <label>NPV Discount Rate</label>
+   <div class="input-with-unit"><input type="number" id="nzSuperDiscountRateShared" value="4.5" step="0.1"><div class="unit">%</div></div>
+   <p class="note">Used for NZ Super NPV (not KiwiSaver returns)</p>
+  </div>
+  <div class="form-group">
+   <label>NPV Horizon</label>
+   <div class="input-with-unit"><input type="number" id="nzSuperNpvHorizonShared" value="25" min="1" max="60" step="1"><div class="unit">years</div></div>
+   <p class="note">Years of payments included in NPV</p>
+  </div>
+ </div>
+<div class="form-group">
             <label>Indexation</label>
-            <select id="nzSuperIndexationShared">
+            <select id="nzSuperIndexationShared" onchange="calculate()">
               <option value="none">None</option>
-              <option value="cpi" selected>CPI</option>
+              <option value="cpi" selected="">CPI</option>
               <option value="wage">Wage</option>
               <option value="hybrid">Hybrid</option>
             </select>
           </div>
         </div>
 
-        <h3 class="nested-h3" id="sharedDecumHeader" onclick="toggleCollapsible('sharedDecum')">Decumulation Strategy</h3>
+        <h3 class="nested-h3" id="sharedDecumHeader" onclick="toggleCollapsible(&#39;sharedDecum&#39;)">Decumulation Strategy</h3>
         <div id="sharedDecumContent" class="collapsible-content">
           <div class="form-group">
             <label>Withdrawal Rule</label>
             <select id="incomeRuleShared">
-              <option value="4percent" selected>4% Rule</option>
+              <option value="4percent" selected="">4% Rule</option>
               <option value="6percent">6% Rule</option>
               <option value="fixed-date">Fixed (Age 90)</option>
             </select>
@@ -325,23 +513,23 @@
       <h2>Results</h2>
       <div id="errorMessage"></div>
 
-      <div id="resultsContent" style="display:none">
+      <div id="resultsContent" style="display: block;">
         <div class="result-item">
           <div class="result-label" id="headlineBalanceLabel">Projected KiwiSaver Balance</div>
-          <div class="result-value" id="projectedBalance">$0.00</div>
-          <div class="result-subtext" id="withdrawalAgeDisplay"></div>
+          <div class="result-value" id="projectedBalance">$259,383</div>
+          <div class="result-subtext" id="withdrawalAgeDisplay">At age 65</div>
 
-          <div id="balanceBreakdownBlock">
+          <div id="balanceBreakdownBlock" style="">
             <div class="breakdown">
               <div class="breakdown-header" onclick="toggleBreakdown(this)">
                 <span>Balance Breakdown</span><span class="breakdown-toggle">▼</span>
               </div>
               <div class="breakdown-content">
-                <div class="breakdown-item"><span>Starting</span><span id="breakdownStarting">$0.00</span></div>
-                <div class="breakdown-item"><span>+ Contributions</span><span id="breakdownMember">$0.00</span></div>
-                <div class="breakdown-item"><span>+ Employer</span><span id="breakdownEmployer">$0.00</span></div>
-                <div class="breakdown-item"><span>+ Government</span><span id="breakdownGovernment">$0.00</span></div>
-                <div class="breakdown-item"><span>+ Returns</span><span id="breakdownReturns">$0.00</span></div>
+                <div class="breakdown-item"><span>Starting</span><span id="breakdownStarting">$2,774.05</span></div>
+                <div class="breakdown-item"><span>+ Contributions</span><span id="breakdownMember">$90,446.95</span></div>
+                <div class="breakdown-item"><span>+ Employer</span><span id="breakdownEmployer">$63,312.87</span></div>
+                <div class="breakdown-item"><span>+ Government</span><span id="breakdownGovernment">$3,363.94</span></div>
+                <div class="breakdown-item"><span>+ Returns</span><span id="breakdownReturns">$99,485.01</span></div>
               </div>
             </div>
           </div>
@@ -349,36 +537,36 @@
           <div id="coupleResults" class="couple-results">
             <div class="divider"></div>
             <div class="breakdown" style="margin-top:12px;">
-              <div class="breakdown-header" onclick="toggleBreakdown(this)">
+              <div class="breakdown-header expanded" onclick="toggleBreakdown(this)">
                 <span>Individual KiwiSaver balances</span><span class="breakdown-toggle">▼</span>
               </div>
-              <div class="breakdown-content">
-                <div class="breakdown-item"><span>You</span><span id="yourBalanceValue">$0</span></div>
-                <div class="breakdown-item"><span>Partner</span><span id="partnerBalanceValue">$0</span></div>
+              <div class="breakdown-content show">
+                <div class="breakdown-item"><span>You</span><span id="yourBalanceValue">$259,382.83</span></div>
+                <div class="breakdown-item"><span>Partner</span><span id="partnerBalanceValue">$259,466.92</span></div>
               </div>
             </div>
           </div>
         </div>
 
-        <div style="background:#E3F2FD;border-left:4px solid #01796F;padding:12px;border-radius:8px;margin-top:12px;color:#004085;font-size:12px">
-          <div style="color:#757575;font-weight:600;text-transform:uppercase;margin-bottom:6px">NZ Super (NPV, 25y from eligibility)</div>
-          <div class="result-value" id="nzSuperValue">$0</div>
-          <div style="margin-top:6px" id="nzSuperIndexationDetails"></div>
+        <div style="background:var(--sorted-grey);border-left:4px solid var(--sorted-orange);padding:12px;border-radius:8px;margin-top:12px;color:var(--card-ink);font-size:12px">
+          <div style="color:#757575;font-weight:600;text-transform:uppercase;margin-bottom:6px">NZ Super (NPV at eligibility age)</div>
+          <div class="result-value" id="nzSuperValue">$538,760</div>
+          <div style="margin-top:6px;color:#999" id="nzSuperIndexationDetails">Indexed (CPI) — lump-sum equivalent at eligibility age (today’s $, in advance)</div>
         </div>
 
         <div class="divider"></div>
 
         <div id="incomeTableBlock">
-          <h3 style="margin:0 0 12px;color:#1A237E;font-size:12px;font-weight:600;border:none;background:none;padding:0;text-transform:uppercase">Annual Retirement Income</h3>
+          <h3 style="margin:0 0 12px;color:var(--card-ink);font-size:12px;font-weight:600;border:none;background:none;padding:0;text-transform:uppercase">Annual Retirement Income</h3>
           <table>
-            <thead><tr><th>Age</th><th>KiwiSaver</th><th>NZ Super</th><th>Total</th><th>Repl %</th></tr></thead>
-            <tbody id="incomeTable"></tbody>
+            <thead><tr><th>Age</th><th>KiwiSaver</th><th>NZ Super</th><th>Total</th><th id="rrHeader" style="">Repl %</th></tr></thead>
+            <tbody id="incomeTable"><tr><td>65</td><td>$10,379</td><td>$28,382</td><td>$38,761</td><td>45.7%</td></tr><tr><td>66</td><td>$9,964</td><td>$28,382</td><td>$38,346</td><td>45.7%</td></tr><tr><td>67</td><td>$9,565</td><td>$28,382</td><td>$37,947</td><td>45.7%</td></tr><tr><td>68</td><td>$9,182</td><td>$28,382</td><td>$37,565</td><td>45.7%</td></tr><tr><td>69</td><td>$8,815</td><td>$28,382</td><td>$37,197</td><td>45.7%</td></tr><tr><td>70</td><td>$8,462</td><td>$28,382</td><td>$36,845</td><td>45.7%</td></tr><tr><td>71</td><td>$8,124</td><td>$28,382</td><td>$36,506</td><td>45.7%</td></tr><tr><td>72</td><td>$7,799</td><td>$28,382</td><td>$36,181</td><td>45.7%</td></tr><tr><td>73</td><td>$7,487</td><td>$28,382</td><td>$35,869</td><td>45.7%</td></tr><tr><td>74</td><td>$7,188</td><td>$28,382</td><td>$35,570</td><td>45.7%</td></tr><tr><td>75</td><td>$6,900</td><td>$28,382</td><td>$35,282</td><td>45.7%</td></tr><tr><td>76</td><td>$6,624</td><td>$28,382</td><td>$35,006</td><td>45.7%</td></tr><tr><td>77</td><td>$6,359</td><td>$28,382</td><td>$34,741</td><td>45.7%</td></tr><tr><td>78</td><td>$6,105</td><td>$28,382</td><td>$34,487</td><td>45.7%</td></tr><tr><td>79</td><td>$5,861</td><td>$28,382</td><td>$34,243</td><td>45.7%</td></tr><tr><td>80</td><td>$5,626</td><td>$28,382</td><td>$34,008</td><td>45.7%</td></tr><tr><td>81</td><td>$5,401</td><td>$28,382</td><td>$33,783</td><td>45.7%</td></tr><tr><td>82</td><td>$5,185</td><td>$28,382</td><td>$33,567</td><td>45.7%</td></tr><tr><td>83</td><td>$4,978</td><td>$28,382</td><td>$33,360</td><td>45.7%</td></tr><tr><td>84</td><td>$4,779</td><td>$28,382</td><td>$33,161</td><td>45.7%</td></tr><tr><td>85</td><td>$4,587</td><td>$28,382</td><td>$32,970</td><td>45.7%</td></tr><tr><td>86</td><td>$4,404</td><td>$28,382</td><td>$32,786</td><td>45.7%</td></tr><tr><td>87</td><td>$4,228</td><td>$28,382</td><td>$32,610</td><td>45.7%</td></tr><tr><td>88</td><td>$4,059</td><td>$28,382</td><td>$32,441</td><td>45.7%</td></tr><tr><td>89</td><td>$3,896</td><td>$28,382</td><td>$32,279</td><td>45.7%</td></tr><tr><td>90</td><td>$3,740</td><td>$28,382</td><td>$32,123</td><td>45.7%</td></tr></tbody>
           </table>
-          <div class="info"><strong>ℹ️ Estimates only</strong> – Actual returns vary by market performance.</div>
+          <div class="info"><strong>ℹ️ Estimates only</strong> – Actual returns vary by market performance. Replacement rate is shown in today's dollars (inflation-adjusted).</div>
         </div>
       </div>
 
-      <div id="resultsPlaceholder" class="placeholder">Fill in your details and results will appear here</div>
+      <div id="resultsPlaceholder" class="placeholder" style="display: none;">Fill in your details and results will appear here</div>
     </div>
   </div>
 </div>
@@ -409,12 +597,50 @@ function getPirRateFromIncome(annualIncome){
   return 28;
 }
 
-let coupleMode=false,fiscalDrag=false,inflation=true;
+let coupleMode=true,fiscalDrag=false,inflation=true;
 
 const fmt=v=>'$'+Number(v||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const fmt0=v=>'$'+Number(v||0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const clean=v=>(v+'').replace(/,/g,'');
 const formatCurrency=v=>v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const g=id=>document.getElementById(id);
+
+// --- Contribution breaks helpers ---
+function _numVal(id){
+  const el = g(id);
+  if(!el) return NaN;
+  const v = (el.value===null || el.value===undefined) ? '' : (''+el.value).trim();
+  if(v==='') return NaN;
+  const n = +v;
+  return isFinite(n) ? n : NaN;
+}
+function _checked(id){
+  const el = g(id);
+  return !!(el && el.checked);
+}
+function readBreaks(suffix){
+  const br=[];
+  for(let k=1;k<=3;k++){
+    const sA = _numVal(`break${k}StartAge${suffix}`);
+    const eA = _numVal(`break${k}EndAge${suffix}`);
+    const ptEl = g(`break${k}PauseType${suffix}`);
+    const pauseType = ptEl ? ptEl.value : 'member';
+    if(!(isFinite(sA) && isFinite(eA) && eA > sA)) continue;
+    const enabled = _checked(`break${k}TopUpEnabled${suffix}`);
+    const amt = Math.max(0, Math.round(_numVal(`break${k}TopUpAmount${suffix}`) || 0));
+    br.push({ startAge:sA, endAge:eA, pauseType:pauseType, topUpEnabled:enabled, topUpAmount:amt });
+  }
+  br.sort((a,b)=>a.startAge-b.startAge);
+  return br;
+}
+function getBreakAtAge(age, breaks){
+  if(!breaks || !breaks.length) return null;
+  for(const b of breaks){
+    if(age >= b.startAge && age < b.endAge) return b;
+  }
+  return null;
+}
+
 
 // --- DOB + model start date helpers ---
 let _fixedTodayStart = null; // holds the chosen 'today' start date once selected
@@ -426,6 +652,29 @@ function parseDOB(){
   return isNaN(d.getTime()) ? null : d;
 }
 
+
+// --- Partner DOB helpers ---
+function parsePartnerDOB(){
+ const v = g('dobPartner') ? g('dobPartner').value : '';
+ if(!v) return null;
+ const d = new Date(v + 'T00:00:00');
+ return isNaN(d.getTime()) ? null : d;
+}
+function getPartnerStartAge(){
+ const dobP = parsePartnerDOB();
+ const start = getModelStartDate();
+ if(!dobP || !start) return NaN;
+ return ageFromDob(dobP, start);
+}
+function getYearsTotalDateHorizonForDob(dobX, withdrawalAge){
+ const start = getModelStartDate();
+ if(!dobX || !start || !isFinite(withdrawalAge)) return NaN;
+ const y = dobX.getFullYear() + Math.round(withdrawalAge);
+ const ret = new Date(y, dobX.getMonth(), dobX.getDate());
+ const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+ if(isNaN(ret.getTime()) || isNaN(start.getTime())) return NaN;
+ return (ret - start) / MS_PER_YEAR;
+}
 function nextBirthday(dob, refDate){
   const r = new Date(refDate.getTime());
   const y = r.getFullYear();
@@ -458,7 +707,7 @@ function updateDatesUI(){
   const now = new Date();
 
   // Always show age as of today
-  if(g('age')) g('age').value = ageFromDob(dob, now).toFixed(3);
+  if(g('age')) g('age').value = ageFromDob(dob, now).toFixed(1);
 
   // Determine model start date based on dropdown selection
   const choiceEl = g('modelStartChoice');
@@ -539,8 +788,33 @@ function getEsctRateForIncome(grossIncome){
   return rate;
 }
 
+// --- PATCH: Convert gross wage to net wage for replacement rate denominator (personal income tax only; no ACC/WFF) ---
+function grossToNetAnnualIncome(gross){
+  const g = +gross || 0;
+  if(!(g > 0)) return 0;
+  let remaining = g;
+  let tax = 0;
+  // Use the same thresholds/rates as the tax-scale shown in this tool (progressive personal income tax)
+  const brackets = [
+    {threshold:0, rate:10.5},
+    {threshold:18720, rate:17.5},
+    {threshold:64200, rate:30},
+    {threshold:93720, rate:33},
+    {threshold:216000, rate:39}
+  ];
+  for(let k = brackets.length - 1; k >= 0; k--){
+    const b = brackets[k];
+    if(remaining > b.threshold){
+      tax += (remaining - b.threshold) * (b.rate/100);
+      remaining = b.threshold;
+    }
+  }
+  return Math.max(0, g - tax);
+}
+
 function toggleCollapsible(section){
-  const header=g(section+'Header'), content=g(section+'Content');
+  const header = g(section + 'Header');
+  const content = (section === 'dates') ? g('datesFields') : g(section + 'Content');
   if(!header || !content) return;
   content.classList.toggle('show');
 }
@@ -566,7 +840,8 @@ function toggleMode(){
   if(it) it.style.display = '';
 }
 
-function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLedger){
+function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLedger, breaks){
+  breaks = Array.isArray(breaks) ? breaks : [];
  // OPTION A: allow date-based horizon override (year fraction)
  const yearsTotal = (isFinite(yearsTotalOverride) && yearsTotalOverride > 0) ? yearsTotalOverride : (wa - a);
  if(!(yearsTotal > 0)){
@@ -634,6 +909,18 @@ function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLed
     // 5. Track eligibility / tax-year ledger
     const ageAtStart = a + ((p-1)/periodsPerYear);
     const eligibleAge = (ageAtStart >= 18) && (ageAtStart < 65);
+      const activeBreak = getBreakAtAge(ageAtStart, breaks);
+      const inBreak = !!activeBreak;
+      const pauseType = activeBreak ? activeBreak.pauseType : 'member';
+
+      // Apply pause rules (breaks)
+      let memberContAdj = memberCont;
+      let employerContAdj = employerCont;
+      if(inBreak){
+        memberContAdj = 0;
+        if(pauseType === 'both') employerContAdj = 0;
+      }
+
 
     const ty = getTaxYearNumber(p);
     if(ty !== currentTaxYear){
@@ -644,7 +931,7 @@ function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLed
     }
 
     if(eligibleAge){
-      memberSumThisYear += memberCont;
+      memberSumThisYear += memberContAdj;
       if(annualSalary > govtThreshold){
         incomeExceededThisYear = true;
       }
@@ -658,13 +945,23 @@ function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLed
   govtCont = Math.min(govtCap, matched);
  }
     // 7. Closing balance = balance after interest + contributions
-    const closingBalance = balanceAfterInterest + memberCont + employerCont + govtCont;
+    
+      // Government top-up (lump sum) paid once at end of break
+      const nextAgeAtStart = a + (p/periodsPerYear);
+      const nextBreak = getBreakAtAge(nextAgeAtStart, breaks);
+      const isLastPeriodInThisBreak = inBreak && ((!nextBreak) || (nextBreak !== activeBreak));
+      let topUpCont = 0;
+      if(isLastPeriodInThisBreak && activeBreak && activeBreak.topUpEnabled){
+        topUpCont = Math.max(0, Math.round(activeBreak.topUpAmount || 0));
+      }
+
+      const closingBalance = balanceAfterInterest + memberContAdj + employerContAdj + govtCont + topUpCont;
 
     // Totals
     totalReturns += interestEarned;
-    totalMember += memberCont;
-    totalEmployer += employerCont;
-    totalGovt += govtCont;
+    totalMember += memberContAdj;
+    totalEmployer += employerContAdj;
+    totalGovt += (govtCont + topUpCont);
 
     // If we just paid the govt credit, clear the ledger so next period starts fresh
     if(payNow){
@@ -725,6 +1022,18 @@ function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLed
   // Govt ledger / eligibility
   const ageAtStart = a + ((p-1)/periodsPerYear_F);
   const eligibleAge = (ageAtStart >= 18) && (ageAtStart < 65);
+    const activeBreak = getBreakAtAge(ageAtStart, breaks);
+    const inBreak = !!activeBreak;
+    const pauseType = activeBreak ? activeBreak.pauseType : 'member';
+
+    // Apply pause rules (breaks)
+    let memberContAdj = memberCont;
+    let employerContAdj = employerCont;
+    if(inBreak){
+      memberContAdj = 0;
+      if(pauseType === 'both') employerContAdj = 0;
+    }
+
 
   const ty = getTaxYearNumber_F(p);
   if(ty !== currentTaxYear){
@@ -734,7 +1043,7 @@ function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLed
   }
 
   if(eligibleAge){
-   memberSumThisYear += memberCont;
+   memberSumThisYear += memberContAdj;
    if(annualSalary > govtThreshold){
     incomeExceededThisYear = true;
    }
@@ -746,12 +1055,22 @@ function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLed
   const matched = memberSumThisYear * (govtRate/100);
   govtCont = Math.min(govtCap, matched);
  }
-  const closingBalance = balanceAfterInterest + memberCont + employerCont + govtCont;
+  
+  // Government top-up (lump sum) paid once at end of break
+  const nextAgeAtStart = a + (p/periodsPerYear_F);
+  const nextBreak = getBreakAtAge(nextAgeAtStart, breaks);
+  const isLastPeriodInThisBreak = inBreak && ((!nextBreak) || (nextBreak !== activeBreak));
+  let topUpCont = 0;
+  if(isLastPeriodInThisBreak && activeBreak && activeBreak.topUpEnabled){
+    topUpCont = Math.max(0, Math.round(activeBreak.topUpAmount || 0));
+  }
+
+  const closingBalance = balanceAfterInterest + memberContAdj + employerContAdj + govtCont + topUpCont;
 
   totalReturns += interestEarned;
-  totalMember += memberCont;
-  totalEmployer += employerCont;
-  totalGovt += govtCont;
+  totalMember += memberContAdj;
+  totalEmployer += employerContAdj;
+  totalGovt += (govtCont + topUpCont);
 
   if(payNow_F){
  currentTaxYear = getTaxYearNumber_F(p+1);
@@ -762,7 +1081,121 @@ function calcKiwiSaver(a, wa, b, i, mr, er, s, wg, yearsTotalOverride, useMtcLed
  }
 
  return {nom: balance, mTot: totalMember, eTot: totalEmployer, gTot: totalGovt, rTot: totalReturns};
-return {nom: balance, mTot: totalMember, eTot: totalEmployer, gTot: totalGovt, rTot: totalReturns};
+}
+
+
+// --- Decumulation (drawdown) helpers: Excel-style year-by-year balance path ---
+// Implements (per your Excel model spec):
+//   startBalance = previous year's endBalance (or initial at retirement)
+//   drawdown = per selected strategy
+//   endBalance = (startBalance - drawdown) * (1 + investmentReturn)
+// Fund never goes negative; drawdown is capped if needed.
+// Strategy notes:
+//  - 4%/6% rules: percentage of CURRENT year's starting balance (no inflation indexing).
+//  - Fixed (Age 90): fixed nominal payment that fully depletes by target age (90).
+//    With drawdown applied at the start of each year (annuity due), the payment aligns with PMT(..., type=1).
+
+function simulateKsDecumulationSchedule(balanceAtWithdrawalNom, withdrawAge, startAge, rule, iR, rR){
+  const TARGET_AGE = 90;
+  const out = {};
+
+  const wAge = Math.round(withdrawAge);
+
+  // If withdrawal starts after target age, table is all zeros
+  if(!(isFinite(wAge)) || wAge > TARGET_AGE){
+    for(let age=65; age<=TARGET_AGE; age++){
+      out[age] = { incomeNom: 0, incomeRealToday: 0, endBalNom: 0, endBalRealToday: 0 };
+    }
+    return out;
+  }
+
+  // Pre-fill any ages before withdrawal age (that appear in the table) with zeros
+  for(let age=65; age<Math.min(wAge, TARGET_AGE+1); age++){
+    out[age] = { incomeNom: 0, incomeRealToday: 0, endBalNom: 0, endBalRealToday: 0 };
+  }
+
+  // Guard: if no balance at retirement, everything is zero
+  if(!(isFinite(balanceAtWithdrawalNom) && balanceAtWithdrawalNom > 0) || !(isFinite(rR))){
+    for(let age=Math.max(65, wAge); age<=TARGET_AGE; age++){
+      out[age] = { incomeNom: 0, incomeRealToday: 0, endBalNom: 0, endBalRealToday: 0 };
+    }
+    return out;
+  }
+
+  // ---- Strategy 3: fixed payment to deplete BY target age ----
+  // Interpretation consistent with your spec 'years = target age - retirement age'
+  // Example: retire 65, target 90 => 25 payments (ages 65..89). At age 90, all values are 0.
+  let fixedPayNom = 0;
+  if(rule === 'fixed-date'){
+    const n = Math.max(1, (TARGET_AGE - wAge)); // number of payments (ages wAge..TARGET_AGE-1)
+    if(Math.abs(rR) < 1e-12){
+      fixedPayNom = balanceAtWithdrawalNom / n;
+    } else {
+      // Ordinary annuity (annuity-immediate) payment (Excel-aligned):
+      // PV = P * (1 - (1+r)^-n) / r
+      // => P = PV * r / (1 - (1+r)^-n)
+      const denom = (1 - Math.pow(1 + rR, -n));
+      fixedPayNom = balanceAtWithdrawalNom * rR / denom;
+    }
+  }
+
+  // Simulate from withdrawal age forward; withdrawal happens at start of each year.
+  let balNom = balanceAtWithdrawalNom;
+
+  for(let age=wAge; age<=TARGET_AGE; age++){
+    // After target age reached (age == 90), all income/balances shown as 0 for fixed-date.
+    if(rule === 'fixed-date' && age >= TARGET_AGE){
+      out[age] = { incomeNom: 0, incomeRealToday: 0, endBalNom: 0, endBalRealToday: 0 };
+      balNom = 0;
+      continue;
+    }
+
+    const startBal = balNom;
+
+    if(!(startBal > 0)){
+      out[age] = { incomeNom: 0, incomeRealToday: 0, endBalNom: 0, endBalRealToday: 0 };
+      balNom = 0;
+      continue;
+    }
+
+    // Determine drawdown for this year
+    let drawdown = 0;
+    if(rule === '4percent' || rule === '6percent'){
+      const pct = (rule === '4percent') ? 0.04 : 0.06;
+      drawdown = startBal * pct;
+    } else if(rule === 'fixed-date'){
+      drawdown = fixedPayNom;
+    } else {
+      // Fallback safety: treat as 4% rule
+      drawdown = startBal * 0.04;
+    }
+
+    // Ensure fund never goes negative; adjust drawdown accordingly
+    if(!isFinite(drawdown) || drawdown < 0) drawdown = 0;
+    if(rule !== 'fixed-date' && drawdown > startBal) drawdown = startBal;
+
+    // Apply return AFTER withdrawing (Excel-style)
+    let endBal = (startBal - drawdown) * (1 + rR);
+    if(!isFinite(endBal) || endBal < 0) endBal = 0;
+
+    // Deflate to today's dollars (for Real display mode)
+    const yearsFromStart = Math.max(0, age - startAge);
+    const deflator = Math.pow(1 + (iR || 0), yearsFromStart);
+
+    const incomeNom = drawdown;
+    const incomeRealToday = (deflator > 0) ? (incomeNom / deflator) : incomeNom;
+
+    const endBalNom = endBal;
+    const endBalRealToday = (deflator > 0) ? (endBalNom / deflator) : endBalNom;
+
+    if(age >= 65){
+      out[age] = { incomeNom, incomeRealToday, endBalNom, endBalRealToday };
+    }
+
+    balNom = endBal;
+  }
+
+  return out;
 }
 
 function calculate(){
@@ -783,11 +1216,18 @@ function calculate(){
     const inf=+(coupleMode?g('inflationRateShared').value:g('inflationRate').value)||0;
     const nza=+(coupleMode?g('nzSuperAgeShared').value:g('nzSuperAge').value)||65;
     const nzi=(coupleMode?g('nzSuperIndexationShared').value:g('nzSuperIndexation').value);
-    const ir=(coupleMode?g('incomeRuleShared').value:g('incomeRule').value);
+    const ir=(coupleMode?g('incomeRuleShared',
+    'break1StartAge','break1EndAge','break1PauseType','break1TopUpEnabled','break1TopUpAmount',
+    'break2StartAge','break2EndAge','break2PauseType','break2TopUpEnabled','break2TopUpAmount',
+    'break3StartAge','break3EndAge','break3PauseType','break3TopUpEnabled','break3TopUpAmount',
+    'break1StartAgePartner','break1EndAgePartner','break1PauseTypePartner','break1TopUpEnabledPartner','break1TopUpAmountPartner',
+    'break2StartAgePartner','break2EndAgePartner','break2PauseTypePartner','break2TopUpEnabledPartner','break2TopUpAmountPartner',
+    'break3StartAgePartner','break3EndAgePartner','break3PauseTypePartner','break3TopUpEnabledPartner','break3TopUpAmountPartner').value:g('incomeRule').value);
 
     g('errorMessage').innerHTML='';
 
-    if(!a || !wa || !i || !s){
+    // Allow annual income = 0 (e.g., children / no earnings). Only block if missing/invalid.
+if(!isFinite(a) || !isFinite(wa) || !isFinite(i) || !s){
       g('resultsContent').style.display='none';
       g('resultsPlaceholder').style.display='block';
       return;
@@ -807,7 +1247,8 @@ function calculate(){
  // OPTION A: date-based horizon (year fraction)
  let yearsTotalDate = getYearsTotalDateHorizon(wa);
  if(!(isFinite(yearsTotalDate) && yearsTotalDate > 0)) yearsTotalDate = (wa - a); // fallback
- const ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg, yearsTotalDate, true);
+ const breaksPrimary = readBreaks('');
+    const ks=calcKiwiSaver(a,wa,b,i,mr,er,s,wg, yearsTotalDate, true, breaksPrimary);
  const yrs=yearsTotalDate;
  const periodsInfl = Math.max(0, Math.round(yrs * 12));
  const yrsInfl = periodsInfl / 12;
@@ -818,14 +1259,17 @@ function calculate(){
     let label = "Projected KiwiSaver Balance";
 
     if(coupleMode){
-      const ap=+g('agePartner').value, wap=+g('withdrawalAgePartner').value;
+      const ap = getPartnerStartAge(), wap=+g('withdrawalAgePartner').value;
       const bp=+clean(g('currentBalancePartner').value)||0;
       const ip=+clean(g('annualIncomePartner').value)||0;
       const mrp=+g('memberRatePartner').value||0;
       const erp=+g('employerRatePartner').value||0;
       const sp=g('strategyPartner').value;
 
-      const ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg, undefined, false);
+      let yearsTotalDateP = getYearsTotalDateHorizonForDob(parsePartnerDOB(), wap);
+ if(!(isFinite(yearsTotalDateP) && yearsTotalDateP > 0)) yearsTotalDateP = (wap - ap);
+ const breaksPartner = readBreaks('Partner');
+      const ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg, yearsTotalDateP, false, breaksPartner);
       const yrsp=wap-ap;
       const inflFactorP=Math.pow(1+iR,yrsp);
       const partnerDisplayed = inflation ? (ksp.nom/inflFactorP) : ksp.nom;
@@ -840,7 +1284,7 @@ function calculate(){
     }
 
     g('headlineBalanceLabel').textContent = label;
-    g('projectedBalance').textContent = fmt(headlineValue);
+    g('projectedBalance').textContent = fmt0(headlineValue);
     g('withdrawalAgeDisplay').textContent = coupleMode ? "At each partner’s withdrawal age (displayed as real/nominal)" : ("At age " + wa);
 
     // Balance breakdown (individual mode) — FIXED
@@ -862,139 +1306,309 @@ function calculate(){
       }
     } catch(_e) { console.warn(_e); }
 
-    // NZ Super NPV block
-      const nzBaseSingleNow = +clean(g('nzSuperAnnual').value) || 0; // single annual (after tax)
-      const nzBaseCoupleNow = +clean(g('nzSuperAnnualShared').value) || 0; // couple annual (total, after tax)
+    // NZ Super NPV block (PV at eligibility age; horizon configurable)
+    const nzBaseSingleNow = +clean(g('nzSuperAnnual').value) || 0; // annual after-tax, single living alone
+    const nzBaseCoupleNow = +clean(g('nzSuperAnnualShared').value) || 0; // annual after-tax, couple total
+    const nzDiscRate = (+(coupleMode ? (g('nzSuperDiscountRateShared') && g('nzSuperDiscountRateShared').value) : (g('nzSuperDiscountRate') && g('nzSuperDiscountRate').value)) || 4.5) / 100;
+    const nzHorizon = Math.max(1, Math.round(+(coupleMode ? (g('nzSuperNpvHorizonShared') && g('nzSuperNpvHorizonShared').value) : (g('nzSuperNpvHorizon') && g('nzSuperNpvHorizon').value)) || 25));
 
-      function indexFactor(years){
-        const y=Math.max(0,years);
-        if(nzi==='none') return 1;
-        if(nzi==='cpi') return Math.pow(1+inf/100,y);
-        if(nzi==='wage') return Math.pow(1+wg/100,y);
-        if(nzi==='hybrid') return Math.pow(1+Math.max(inf/100,wg/100),y);
-        return 1;
-      }
+    // --- PATCH: Implement NZ Super 'hybrid' indexation (CPI-first + wage floor/cap) ---
+function indexFactorNonHybrid(years){
+  const y = Math.max(0, years);
+  if(nzi==='none') return 1;
+  // CPI freeze: no nominal reductions if CPI negative
+  if(nzi==='cpi')  return Math.pow(1 + Math.max(inf/100, 0), y);
+  if(nzi==='wage') return Math.pow(1 + wg/100, y);
+  // hybrid handled separately
+  return 1;
+}
 
-      // Age today (primary DOB-based); partner age today comes from input (no partner DOB in this tool)
-      const ageToday = getAgeToday();
-      const ageTodayPartner = coupleMode ? (+g('agePartner').value || 0) : NaN;
-      const yearsToEligPrimary = Math.max(0, nza - ageToday);
-      const yearsToEligPartner = coupleMode ? Math.max(0, nza - ageTodayPartner) : NaN;
-      const firstEligibility = coupleMode ? Math.min(yearsToEligPrimary, yearsToEligPartner) : yearsToEligPrimary;
+// Default net AOTWE (annual, net) inferred from current couple NZS sitting at the 66% floor.
+// NOTE: Replace with an explicit net AOTWE input when available.
+const netAOTWEAnnualNow_DEFAULT = (nzBaseCoupleNow > 0) ? (nzBaseCoupleNow / 0.66) : 0;
 
-      // Base annual amounts indexed from 'now' to the first-eligibility year
-      const nzAtEligibility = nzBaseSingleNow * indexFactor(firstEligibility); // retained for single-mode income table
-      const nzSingleAtEligibility = nzBaseSingleNow * indexFactor(firstEligibility);
-      const nzCoupleAtEligibility = nzBaseCoupleNow * indexFactor(firstEligibility);
+function indexedCoupleNZSAnnual_Hybrid(years){
+  const y = Math.max(0, years);
+  // 1) CPI index first, with freeze if CPI < 0
+  const cpi = Math.max(inf/100, 0);
+  const cpiIndexed = nzBaseCoupleNow * Math.pow(1 + cpi, y);
 
-      // Present value to TODAY of up to 25 years of NZ Super payments starting at first eligibility.
-      // In couple mode, payment switches from single->couple when the second partner reaches eligibility.
-      let nzsPvToday = 0;
-      for(let t=0; t<25; t++){
-        const yearsFromNow = firstEligibility + t;
-        let paymentAtT = 0;
-        if(!coupleMode){
-          paymentAtT = nzBaseSingleNow * indexFactor(yearsFromNow);
-        } else {
-          const primaryAgeAtT = ageToday + yearsFromNow;
-          const partnerAgeAtT = ageTodayPartner + yearsFromNow;
-          const eligibleCount = (primaryAgeAtT >= nza ? 1 : 0) + (partnerAgeAtT >= nza ? 1 : 0);
-          if(eligibleCount === 1){
-            paymentAtT = nzBaseSingleNow * indexFactor(yearsFromNow);
-          } else if(eligibleCount === 2){
-            paymentAtT = nzBaseCoupleNow * indexFactor(yearsFromNow);
-          }
-        }
-        nzsPvToday += paymentAtT / Math.pow(1 + rR, yearsFromNow);
-      }
+  // 2) Apply wage floor and cap using net AOTWE (assumed to grow with wages)
+  const wage = wg/100;
+  const netAOTWEAnnualAtY = netAOTWEAnnualNow_DEFAULT * Math.pow(1 + wage, y);
+  const floor = 0.66  * netAOTWEAnnualAtY;
+  const cap   = 0.725 * netAOTWEAnnualAtY;
 
-      const nzsDisplayed = inflation ? nzsPvToday : (nzsPvToday * Math.pow(1 + rR, firstEligibility));
-      g('nzSuperValue').textContent = fmt(nzsDisplayed);
-      g('nzSuperIndexationDetails').textContent =
-        (nzi==='none'?'Static':nzi==='cpi'?'Indexed (CPI)':nzi==='wage'?'Indexed (Wage)':'Indexed (Hybrid)') +
-        (inflation ? " — PV to today" : " — PV to first eligibility");
-// Income table (individual and couple)
-    {
-      let partnerNomAtRet = 0;
-      let partnerWithdrawAge = 0;
-      let partnerIncomeDenom = 0;
+  // 3) Clamp
+  return Math.min(Math.max(cpiIndexed, floor), cap);
+}
 
-      if(coupleMode){
-        const ap=+g('agePartner').value, wap=+g('withdrawalAgePartner').value;
-        const bp=+clean(g('currentBalancePartner').value)||0;
-        const ip=+clean(g('annualIncomePartner').value)||0;
-        const mrp=+g('memberRatePartner').value||0;
-        const erp=+g('employerRatePartner').value||0;
-        const sp=g('strategyPartner').value;
+// Unified NZS payment getter (annual, net), used by PV loop and income table
+function nzsPaymentAnnual(yearsFromStart, eligibleCount){
+  if(eligibleCount <= 0) return 0;
 
-        const ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg, undefined, false);
-        partnerNomAtRet = ksp.nom;
-        partnerWithdrawAge = wap;
-        partnerIncomeDenom = ip;
-      }
+  // Align indexation timing with the Excel tool:
+  // use whole years from *today* to the payment age (DATEDIF-style) in single mode.
+  // (In couple mode we keep existing timing because eligibility can differ between partners.)
+  let y = Math.max(0, yearsFromStart);
+  if(!coupleMode){
+    const ageTodayInt_NZS = Math.floor(getAgeToday());
+    const payAgeInt = Math.floor((ageStartPrimary + y) + 1e-9); // should line up to nza + t
+    // Excel-consistent: do not pre-index the first eligibility-year payment
+    y = Math.max(0, payAgeInt - ageTodayInt_NZS - 1);
+  }
 
-      function ksIncomeAtAge(balanceAtRet, withdrawAge, ageNow){
-        if(ageNow < withdrawAge) return 0;
-        const yf = ageNow - withdrawAge;
-        const nomAtAge = balanceAtRet * Math.pow(1 + rR, Math.max(0,yf));
-        const realAtAge = nomAtAge / Math.pow(1 + iR, Math.max(0,yf));
-        const db = inflation ? realAtAge : nomAtAge;
-        if(ir==='4percent') return db*0.04;
-        if(ir==='6percent') return db*0.06;
-        return db/(90-ageNow);
-      }
+  if(nzi === 'hybrid'){
+    const couple = indexedCoupleNZSAnnual_Hybrid(y);
+    // Derive single rates from the married couple rate (net):
+    const singleLivingAlone = 0.65 * couple;
+    // const singleSharing = 0.60 * couple; // available if/when sharing status is modelled
+    return (eligibleCount === 2) ? couple : singleLivingAlone;
+  }
+  const f = indexFactorNonHybrid(y);
+  return (eligibleCount === 2) ? (nzBaseCoupleNow * f) : (nzBaseSingleNow * f);
+}
 
-      // --- Replacement rate denominator: earnings just before retirement ---
-      // OECD-style denominator uses earnings in the year immediately before retirement (not earnings today).
-      const yearsToRetPrimary = Math.max(0, wa - a);
-      const earningsAtRetPrimary = i * Math.pow(1 + (wg/100), yearsToRetPrimary);
+// Anchor NZ Super timing to the model start age(s), aligning with KiwiSaver withdrawal age comparisons
+    const ageStartPrimary = a;
+    const ageStartPartner = coupleMode ? (getPartnerStartAge() || 0) : NaN;
+    const yearsToEligPrimary = Math.max(0, nza - ageStartPrimary);
+    const yearsToEligPartner = coupleMode ? Math.max(0, nza - ageStartPartner) : NaN;
+    const firstEligibility = coupleMode ? Math.min(yearsToEligPrimary, yearsToEligPartner) : yearsToEligPrimary;
 
-      let earningsAtRetPartner = 0;
-      if(coupleMode){
-        const apDen = +g('agePartner').value || 0;
-        const wapDen = +g('withdrawalAgePartner').value || 0;
-        const ipDen = +clean(g('annualIncomePartner').value) || 0;
-        const yearsToRetPartner = Math.max(0, wapDen - apDen);
-        earningsAtRetPartner = ipDen * Math.pow(1 + (wg/100), yearsToRetPartner);
-      }
+    // Present value at eligibility age of NZ Super payments over nzHorizon years
+    let nzsPvAtElig = 0;
+for(let t=0; t<nzHorizon; t++){
+  const yearsFromStart = firstEligibility + t;
+  let eligibleCount = 0;
+  if(!coupleMode){
+    // By construction, PV is measured from (first) eligibility onward
+    eligibleCount = 1;
+  } else {
+    const primaryAgeAtT = ageStartPrimary + yearsFromStart;
+    const partnerAgeAtT = ageStartPartner + yearsFromStart;
+    eligibleCount = (primaryAgeAtT >= nza ? 1 : 0) + (partnerAgeAtT >= nza ? 1 : 0);
+  }
+  const paymentAtT = nzsPaymentAnnual(yearsFromStart, eligibleCount);
+  // Excel-consistent timing: treat first payment as occurring at end of first period (NPV in arrears)
+ nzsPvAtElig += paymentAtT / Math.pow(1 + nzDiscRate, t);
+}
 
-      const denom = coupleMode ? (earningsAtRetPrimary + earningsAtRetPartner) : earningsAtRetPrimary;
+    // Display basis: 
+ // - Nominal: PV at eligibility (dollars at eligibility age) 
+ // - Real: PV at eligibility expressed in today's dollars (deflate by inflation from *today* to eligibility)
 
-      let html='';
+ // Deflate from today's age (not model start age) so "Real" is truly in today's dollars
+ let yearsToEligFromToday = 0;
 
-      for(let ar=65; ar<=90; ar++){
-        const ksYou = ksIncomeAtAge(ks.nom, wa, ar);
-        const ksPartner = coupleMode ? ksIncomeAtAge(partnerNomAtRet, partnerWithdrawAge, ar) : 0;
-        const ksTotal = ksYou + ksPartner;
-      // NZ Super (simplified single vs couple structure; eligibility assessed per person by age)
-      let nzs = 0;
-      if(!coupleMode){
-        // Single mode: pay single rate only once primary reaches eligibility age
-        if(ar >= nza) nzs = nzAtEligibility * indexFactor(ar - nza);
-      } else {
-        // Couple mode: assess each person separately at this point in time.
-        // 'ar' is primary person's age in the table. Partner's age advances by the same elapsed years.
-        const elapsedYears = ar - a;
-        const partnerAgeNow = (+g('agePartner').value || 0) + elapsedYears;
-        const eligibleCount = (ar >= nza ? 1 : 0) + (partnerAgeNow >= nza ? 1 : 0);
-        if(eligibleCount === 1){
-          // Exactly one eligible: pay single rate
-          nzs = nzSingleAtEligibility * indexFactor(ar - nza);
-        } else if(eligibleCount === 2){
-          // Both eligible: pay couple rate (total for household)
-          nzs = nzCoupleAtEligibility * indexFactor(ar - nza);
-        }
-      }
-      const total = ksTotal + nzs;
-        const rep = denom>0 ? (total/denom)*100 : 0;
+ if(!coupleMode){
+   const ageToday = getAgeToday();
+   yearsToEligFromToday = Math.max(0, nza - Math.floor(ageToday));
+ } else {
+   const dobP = parsePartnerDOB();
+   const ageTodayPrimary = getAgeToday();
+   const ageTodayPartner = (dobP ? ageFromDob(dobP, new Date()) : NaN);
 
-        html += `<tr><td>${ar}</td><td>${fmt(ksTotal)}</td><td>${fmt(nzs)}</td><td>${fmt(total)}</td><td>${rep.toFixed(1)}%</td></tr>`;
-      }
+   const y1 = Math.max(0, nza - Math.floor(isFinite(ageTodayPrimary) ? ageTodayPrimary : nza));
+   const y2 = Math.max(0, nza - Math.floor(isFinite(ageTodayPartner) ? ageTodayPartner : nza));
+   // Use the earlier eligibility (consistent with PV being "at first eligibility age")
+   yearsToEligFromToday = Math.min(y1, y2);
+ }
 
-      g('incomeTable').innerHTML = html;
+ const inflToElig = Math.pow(1 + iR, yearsToEligFromToday);
+ // Two-step: (1) PV at eligibility age in nominal dollars, then (2) deflate to today’s dollars when Real is selected
+ const nzsNominalAtElig = nzsPvAtElig;
+ const nzsTodayDollarsAtElig = (inflToElig > 0) ? (nzsPvAtElig / inflToElig) : nzsPvAtElig;
+ const nzsDisplayed = inflation ? nzsTodayDollarsAtElig : nzsNominalAtElig;
+ g('nzSuperValue').textContent = fmt0(nzsDisplayed);
+    g('nzSuperIndexationDetails').textContent =
+ (nzi==='none'?'Static':nzi==='cpi'?'Indexed (CPI)':nzi==='wage'?'Indexed (Wage)':'Indexed (Hybrid)') +
+ (inflation ? ' — lump-sum equivalent at eligibility age (today’s $, in advance)' : ' — lump-sum equivalent at eligibility age (nominal $, in advance)');
+
+// Income table (individual and couple) — consistent Real/Nominal basis
+ {
+  let partnerNomAtRet = 0;
+  let partnerWithdrawAge = 0;
+  let partnerAgeStart = 0;
+  if(coupleMode){
+    const ap = getPartnerStartAge(), wap=+g('withdrawalAgePartner').value;
+    const bp=+clean(g('currentBalancePartner').value)||0;
+    const ip=+clean(g('annualIncomePartner').value)||0;
+    const mrp=+g('memberRatePartner').value||0;
+    const erp=+g('employerRatePartner').value||0;
+    const sp=g('strategyPartner').value;
+    let yearsTotalDateP = getYearsTotalDateHorizonForDob(parsePartnerDOB(), wap);
+    if(!(isFinite(yearsTotalDateP) && yearsTotalDateP > 0)) yearsTotalDateP = (wap - ap);
+    const breaksPartner = readBreaks('Partner');
+      const ksp=calcKiwiSaver(ap,wap,bp,ip,mrp,erp,sp,wg, yearsTotalDateP, false, breaksPartner);
+    partnerNomAtRet = ksp.nom;
+    partnerWithdrawAge = wap;
+    partnerAgeStart = ap;
+  }
+
+  // ===============================
+
+  // Build stateful KiwiSaver drawdown schedules (fixes terminal-year spike + makes 4%/6% inflation-indexed)
+  const ksScheduleYou = simulateKsDecumulationSchedule(ks.nom, wa, a, ir, iR, rR);
+  let ksSchedulePartner = null;
+  if(coupleMode){
+    ksSchedulePartner = simulateKsDecumulationSchedule(partnerNomAtRet, partnerWithdrawAge, partnerAgeStart, ir, iR, rR);
+  }
+
+  
+  // ===============================
+  // Replacement rates (Excel-aligned)
+  // 1) vs Current Income: Year-1 retirement income ÷ today's net income
+  // 2) vs Net Income at Retirement (year before): Year-1 retirement income ÷ net income at age 64 (tax applied at age-64 gross)
+  // NOTE: This block affects replacement-rate calculations ONLY.
+  // ===============================
+
+  // RR-only net income function (matches Excel B54 exactly)
+  function calculateNetIncome_RR(gross){
+    const g = +gross || 0;
+    if(!(g > 0)) return 0;
+    let tax = 0;
+    let prev = 0;
+    const brackets = [
+      {threshold: 15600, rate: 0.105},
+      {threshold: 53500, rate: 0.175},
+      {threshold: 78100, rate: 0.30 },
+      {threshold: 180000, rate: 0.33},
+      {threshold: Infinity, rate: 0.39}
+    ];
+    for(const b of brackets){
+      if(g <= prev) break;
+      const cap = (b.threshold === Infinity) ? g : Math.min(g, b.threshold);
+      const amt = cap - prev;
+      if(amt > 0) tax += amt * b.rate;
+      prev = (b.threshold === Infinity) ? g : b.threshold;
+    }
+    return Math.max(0, g - tax);
+  }
+
+  // Calendar age today (integer)
+  const ageTodayInt_RR = Math.floor(getAgeToday());
+  const wageGrowthRate_RR = (wg/100);
+
+  // ---- Denominator A: today's net income (current year) ----
+  let currentNetIncome_RR = calculateNetIncome_RR(i);
+  if(coupleMode){
+    const partnerGrossNow = +clean(g('annualIncomePartner').value) || 0;
+    currentNetIncome_RR += calculateNetIncome_RR(partnerGrossNow);
+  }
+
+  // ---- Denominator B: net income at age 64 (year before retirement) ----
+  const yearsToAge64_RR = Math.max(0, (wa - ageTodayInt_RR) - 1);
+  const grossAtAge64_RR = i * Math.pow(1 + wageGrowthRate_RR, yearsToAge64_RR);
+  let netAtAge64_RR = calculateNetIncome_RR(grossAtAge64_RR);
+
+  if(coupleMode){
+    const dobP = parsePartnerDOB();
+    if(dobP){
+      const wap = +g('withdrawalAgePartner').value || 0;
+      const partnerGrossNow = +clean(g('annualIncomePartner').value) || 0;
+      const partnerAgeTodayInt = Math.floor(ageFromDob(dobP, new Date()));
+      const partnerYearsToAge64 = Math.max(0, (wap - partnerAgeTodayInt) - 1);
+      const partnerGrossAtAge64 = partnerGrossNow * Math.pow(1 + wageGrowthRate_RR, partnerYearsToAge64);
+      netAtAge64_RR += calculateNetIncome_RR(partnerGrossAtAge64);
+    }
+  }
+
+  // ---- Numerator: Year-1 retirement income (Excel B50 = B46 + B23) ----
+  // B23 equivalent: NZS annual amount in first retirement year (age wa)
+  const arYear1_RR = wa;
+  const yearsFromStartYear1_RR = Math.max(0, arYear1_RR - a);
+  const ageTodayInt_NZS_RR = Math.floor(getAgeToday());
+  const yearsFromNzsYear1_RR = (!coupleMode && isFinite(ageTodayInt_NZS_RR)) ? Math.max(0, arYear1_RR - ageTodayInt_NZS_RR) : yearsFromStartYear1_RR;
+
+  let eligibleCountYear1_RR = 0;
+  if(!coupleMode){
+    eligibleCountYear1_RR = (arYear1_RR >= nza) ? 1 : 0;
+  } else {
+    const elapsed = arYear1_RR - a;
+    const partnerAgeNow = partnerAgeStart + elapsed;
+    eligibleCountYear1_RR = (arYear1_RR >= nza ? 1 : 0) + (partnerAgeNow >= nza ? 1 : 0);
+  }
+  const year1NZSuper_RR = nzsPaymentAnnual(yearsFromNzsYear1_RR, eligibleCountYear1_RR);
+
+  // B46 equivalent: KiwiSaver Year-1 drawdown amount (RR-only) based on selected rule.
+  // IMPORTANT: This does NOT change the decumulation schedule; it only defines the RR numerator.
+  let year1KiwiSaverDrawdown_RR = 0;
+ // Use the same decumulation schedules as the income table so replacement rates respond to the selected strategy
+ const waInt_RR = Math.round(wa);
+ const youYear1Row_RR = (ksScheduleYou && ksScheduleYou[waInt_RR]) ? ksScheduleYou[waInt_RR] : { incomeNom: 0 };
+ year1KiwiSaverDrawdown_RR = youYear1Row_RR.incomeNom || 0;
+ // Partner KiwiSaver added for couple RR numerator (RR-only)
+ if(coupleMode && ksSchedulePartner){
+   const wapInt_RR = Math.round(partnerWithdrawAge || wa);
+   const pYear1Row_RR = ksSchedulePartner[wapInt_RR] ? ksSchedulePartner[wapInt_RR] : { incomeNom: 0 };
+   year1KiwiSaverDrawdown_RR += (pYear1Row_RR.incomeNom || 0);
+ }
+const year1RetirementIncome_RR = year1KiwiSaverDrawdown_RR + year1NZSuper_RR;
+
+  const rrVsCurrent_RR = (currentNetIncome_RR > 0) ? (year1RetirementIncome_RR / currentNetIncome_RR) : NaN;
+  const rrVsRetirement_RR = (netAtAge64_RR > 0) ? (year1RetirementIncome_RR / netAtAge64_RR) : NaN;
+
+  // The table shows the 'vs net income at retirement (year before)' measure (Excel B59)
+  const repTextConst = (isFinite(rrVsRetirement_RR) && rrVsRetirement_RR > 0)
+    ? `${(rrVsRetirement_RR * 100).toFixed(1)}%`
+    : '—'; // Replacement rate always calculated in real (inflation-adjusted) terms
+
+let html='';
+  const ageTodayInt = Math.floor(getAgeToday()); // Excel-style whole-years age for NZS indexation
+  for(let ar=65; ar<=90; ar++){
+    const yearsFromStart = Math.max(0, ar - a);
+    // NZ Super indexation (CPI/Wage/Hybrid) aligned to Excel: whole years from *today* to the displayed age.
+    const yearsFromNzs = (!coupleMode && isFinite(ageTodayInt)) ? Math.max(0, ar - ageTodayInt) : yearsFromStart;
+
+    // KiwiSaver income from schedules (both nominal and real today-dollar)
+    const youRow = ksScheduleYou[ar] || { incomeNom: 0, incomeRealToday: 0 };
+    let ksTotalNom = youRow.incomeNom;
+    let ksTotalReal = youRow.incomeRealToday;
+
+    if(coupleMode && ksSchedulePartner){
+      const elapsedYears = ar - a;
+      const partnerAgeNow = partnerAgeStart + elapsedYears;
+      const pAge = Math.max(65, Math.min(90, Math.round(partnerAgeNow)));
+      const pRow = ksSchedulePartner[pAge] || { incomeNom: 0, incomeRealToday: 0 };
+      ksTotalNom += pRow.incomeNom;
+      ksTotalReal += pRow.incomeRealToday;
     }
 
-    g('resultsContent').style.display='block';
+    const ksTotalDisp = inflation ? ksTotalReal : ksTotalNom;
+
+    // NZ Super income at age ar: compute nominal (age-ar dollars) and real (today dollars)
+    let nzsNom = 0;
+let eligibleCount = 0;
+if(!coupleMode){
+  eligibleCount = (ar >= nza) ? 1 : 0;
+} else {
+  const elapsedYears = ar - a;
+  const partnerAgeNow = partnerAgeStart + elapsedYears;
+  eligibleCount = (ar >= nza ? 1 : 0) + (partnerAgeNow >= nza ? 1 : 0);
+}
+nzsNom = nzsPaymentAnnual(yearsFromNzs, eligibleCount);
+const nzsReal = (yearsFromStart > 0) ? (nzsNom / Math.pow(1 + iR, yearsFromNzs)) : nzsNom;
+    const nzsDisp = inflation ? nzsReal : nzsNom;
+
+    const totalNom = ksTotalNom + nzsNom;
+    const totalReal = ksTotalReal + nzsReal;
+    const totalDisp = inflation ? totalReal : totalNom;
+
+    // Option A: Replacement rate always uses real income and real pre-retirement earnings
+    const repText = repTextConst;
+    html += `<tr><td>${ar}</td><td>${fmt0(ksTotalDisp)}</td><td>${fmt0(nzsDisp)}</td><td>${fmt0(totalDisp)}</td>${!coupleMode ? `<td>${repText}</td>` : ``}</tr>`;
+  }
+
+  
+  // Hide replacement-rate column for couples
+  const rrHeader = document.getElementById('rrHeader');
+  if (rrHeader) {
+    rrHeader.style.display = coupleMode ? 'none' : '';
+  }
+g('incomeTable').innerHTML = html;
+ }
+g('resultsContent').style.display='block';
     g('resultsPlaceholder').style.display='none';
 
   } catch(e){
@@ -1043,14 +1657,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   // keep DOB/model start date choice in sync
   if(g('dob')) g('dob').addEventListener('change', () => { updateDatesUI(); calculate(); });
   if(g('modelStartChoice')) g('modelStartChoice').addEventListener('change', () => { _fixedTodayStart = null; updateDatesUI(); calculate(); });
+  // Robust: ensure NZ Super indexation dropdowns always trigger recalculation
+  if(g('nzSuperIndexation')) g('nzSuperIndexation').addEventListener('input', () => calculate());
+  if(g('nzSuperIndexationShared')) g('nzSuperIndexationShared').addEventListener('input', () => calculate());
 
   [
     'age','withdrawalAge','currentBalance','annualIncome','memberRate','employerRate','strategy',
-    'agePartner','withdrawalAgePartner','currentBalancePartner','annualIncomePartner','memberRatePartner','employerRatePartner','strategyPartner',
+    'dobPartner','withdrawalAgePartner','currentBalancePartner','annualIncomePartner','memberRatePartner','employerRatePartner','strategyPartner',
     'govtRate','govtThreshold','govtCap',
     'sharedGovtRate','sharedGovtThreshold','sharedGovtCap',
-    'retirementReturn','wageGrowth','inflationRate','nzSuperAge','nzSuperAnnual','nzSuperIndexation','incomeRule',
-    'retirementReturnShared','wageGrowthShared','inflationRateShared','nzSuperAgeShared','nzSuperAnnualShared','nzSuperIndexationShared','incomeRuleShared'
+    'retirementReturn','wageGrowth','inflationRate','nzSuperAge','nzSuperAnnual','nzSuperDiscountRate','nzSuperNpvHorizon','nzSuperIndexation','incomeRule',
+    'retirementReturnShared','wageGrowthShared','inflationRateShared','nzSuperAgeShared','nzSuperAnnualShared','nzSuperDiscountRateShared','nzSuperNpvHorizonShared','nzSuperIndexationShared','incomeRuleShared'
   ].forEach(id=>{
     if(g(id)) g(id).addEventListener('change',()=>calculate());
   });
@@ -1061,5 +1678,5 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 
-</body>
-</html>
+
+</body></html>
